@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://backgroundkiller.com/sitemap.xml

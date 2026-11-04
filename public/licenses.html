@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Licenses and Credits | Background Killer</title>
+<meta name="description" content="The model, software, fonts and images behind Background Killer, with their licenses.">
+<meta name="theme-color" content="#101112">
+<link rel="canonical" href="https://backgroundkiller.com/licenses">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Background Killer">
+<meta property="og:title" content="Licenses and Credits | Background Killer">
+<meta property="og:description" content="The model, software, fonts and images behind Background Killer, with their licenses.">
+<meta property="og:url" content="https://backgroundkiller.com/licenses">
+<meta property="og:image" content="https://backgroundkiller.com/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" href="/fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/styles.css">
+<meta name="robots" content="index,follow">
+</head>
+<body>
+<header class="site-header" style="border-bottom:1px solid var(--line)">
+  <a class="logo" href="/" aria-label="Background Killer home">
+    <img class="brand-logo" src="/assets/avatar.webp" alt="" width="52" height="52">
+    <span class="wordmark">Background<b>Killer</b><small>.com</small></span>
+  </a>
+</header>
+<main class="page article">
+<h1>Licenses and credits</h1>
+<p class="lead">Background Killer is built on open work by other people. Here is what it uses and under which terms.</p>
+<h2>The cutout model</h2>
+<p>The model that finds the subject in your photo is <strong>ISNet general-use</strong>, from the DIS project (Dichotomous Image Segmentation) by Xuebin Qin and colleagues, released under the Apache License 2.0. It is described in &ldquo;Highly Accurate Dichotomous Image Segmentation&rdquo; (ECCV 2022). We converted it to the ONNX format and compressed it to 8 bits so that it runs in a browser. It runs entirely on your device.</p>
+<ul>
+<li><a href="/licenses/isnet-model-NOTICE.txt">Model notice and changes</a></li>
+<li><a href="/licenses/apache-2.0.txt">Apache License 2.0</a></li>
+</ul>
+<h2>Software</h2>
+<ul>
+<li><strong>ONNX Runtime Web</strong>, by Microsoft, runs the model in your browser. MIT license. <a href="/licenses/onnxruntime-web-MIT.txt">License text</a>.</li>
+<li><strong>JSZip</strong>, by Stuart Knightley and contributors, builds the zip file. Used under the MIT license. <a href="/licenses/jszip-MIT.txt">License text</a>.</li>
+</ul>
+<h2>Fonts</h2>
+<ul>
+<li><strong>Anton</strong>, by the Anton Project Authors, used for headlines. SIL Open Font License 1.1. <a href="/licenses/anton-OFL-1.1.txt">License text</a>.</li>
+<li><strong>Inter</strong>, by the Inter Project Authors, used for text. SIL Open Font License 1.1. <a href="/licenses/inter-OFL-1.1.txt">License text</a>.</li>
+</ul>
+<h2>Images</h2>
+<p>The sample kitten photos, the illustration of Claw, and the alley photograph on the home page were made with AI image tools for this site. They are not photographs of real places or animals.</p>
+<h2>Questions</h2>
+<p>If you think something here is credited wrongly, please write to <a href="mailto:support@pigrosoft.com">support@pigrosoft.com</a>.</p>
+</main>
+<footer class="site-footer">
+  <div class="footer-brand">
+    <a class="wordmark" href="/" aria-label="Background Killer home">Background<b>Killer</b><small>.com</small></a>
+    <p class="tagline">The background had it coming.</p>
+  </div>
+  <nav class="footer-col" aria-label="Guides"><h2>Guides</h2><a href="/remove-bg-alternative">Free remove.bg alternative</a><a href="/remove-background-from-image">Remove the background from an image</a><a href="/make-png-transparent">Make a transparent PNG</a><a href="/product-photo-background-remover">Product photo backgrounds</a></nav>
+  <nav class="footer-col" aria-label="Legal"><h2>Legal</h2><a href="/imprint">Imprint</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a><a href="/licenses">Licenses</a></nav>
+  <p class="copy">&copy; 2026 <a href="https://pigrosoft.com/">Pigrosoft</a>, Berlin</p>
+</footer>
+</body>
+</html>

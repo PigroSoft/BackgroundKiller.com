@@ -1,0 +1,9 @@
+ISNet general-use model (DIS, Dichotomous Image Segmentation)
+Copyright (c) Xuebin Qin and the DIS authors.
+Licensed under the Apache License, Version 2.0 (see apache-2.0.txt).
+Source: https://github.com/xuebinqin/DIS
+Paper: Qin et al., "Highly Accurate Dichotomous Image Segmentation", ECCV 2022.
+
+Changes: the original weights were converted to the ONNX format and quantized
+to 8 bits so that they can run in a web browser. The files are served as four
+chunks in /model/ and are reassembled by the page before use.

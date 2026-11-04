@@ -1,0 +1,414 @@
+#!/usr/bin/env python3
+"""Generates the guide and legal pages in public/ and refreshes the shared footer, FAQ and
+structured data inside public/index.html. Run from the repo root: python3 scripts/build_pages.py
+The generated HTML is committed, so the site itself still needs no build step."""
+import json, re, pathlib
+
+ROOT = pathlib.Path(__file__).resolve().parent.parent / "public"
+SITE = "https://backgroundkiller.com"
+UPDATED = "4 November 2026"
+
+# ---------------------------------------------------------------- shared pieces
+GUIDES = [
+    ("/remove-bg-alternative", "Free remove.bg alternative"),
+    ("/remove-background-from-image", "Remove the background from an image"),
+    ("/make-png-transparent", "Make a transparent PNG"),
+    ("/product-photo-background-remover", "Product photo backgrounds"),
+]
+LEGAL = [("/imprint", "Imprint"), ("/privacy", "Privacy"), ("/terms", "Terms"), ("/licenses", "Licenses")]
+
+FOOTER = """<footer class="site-footer">
+  <div class="footer-brand">
+    <a class="wordmark" href="/" aria-label="Background Killer home">Background<b>Killer</b><small>.com</small></a>
+    <p class="tagline">The background had it coming.</p>
+  </div>
+  <nav class="footer-col" aria-label="Guides"><h2>Guides</h2>%s</nav>
+  <nav class="footer-col" aria-label="Legal"><h2>Legal</h2>%s</nav>
+  <p class="copy">&copy; 2026 <a href="https://pigrosoft.com/">Pigrosoft</a>, Berlin</p>
+</footer>""" % (
+    "".join('<a href="%s">%s</a>' % g for g in GUIDES),
+    "".join('<a href="%s">%s</a>' % g for g in LEGAL),
+)
+
+HEADER = """<header class="site-header" style="border-bottom:1px solid var(--line)">
+  <a class="logo" href="/" aria-label="Background Killer home">
+    <img class="brand-logo" src="/assets/avatar.webp" alt="" width="52" height="52">
+    <span class="wordmark">Background<b>Killer</b><small>.com</small></span>
+  </a>
+</header>"""
+
+def head(title, desc, path, extra=""):
+    url = SITE + path
+    return f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>{title}</title>
+<meta name="description" content="{desc}">
+<meta name="theme-color" content="#101112">
+<link rel="canonical" href="{url}">
+<link rel="icon" type="image/png" href="/favicon.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Background Killer">
+<meta property="og:title" content="{title}">
+<meta property="og:description" content="{desc}">
+<meta property="og:url" content="{url}">
+<meta property="og:image" content="{SITE}/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" href="/fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/styles.css">
+{extra}</head>
+<body>
+"""
+
+def breadcrumb(name, path):
+    return '<script type="application/ld+json">%s</script>\n' % json.dumps({
+        "@context": "https://schema.org", "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": 1, "name": "Background Killer", "item": SITE + "/"},
+            {"@type": "ListItem", "position": 2, "name": name, "item": SITE + path}]})
+
+def page(path, title, desc, body, crumb=None, robots=None):
+    extra = breadcrumb(crumb, path) if crumb else ""
+    if robots:
+        extra += '<meta name="robots" content="%s">\n' % robots
+    html = head(title, desc, path, extra) + HEADER + "\n<main class=\"page article\">\n" + body.strip() + "\n</main>\n" + FOOTER + "\n</body>\n</html>\n"
+    (ROOT / (path.strip("/") + ".html")).write_text(html, encoding="utf-8")
+
+CTA = '<p class="cta"><a class="btn btn-primary btn-lg" href="/">Remove a background</a></p>'
+
+def related(skip):
+    items = "".join('<li><a href="%s">%s</a></li>' % g for g in GUIDES if g[0] != skip)
+    return '<h2>More guides</h2>\n<ul>%s</ul>' % items
+
+# ---------------------------------------------------------------- home FAQ (visible text and JSON-LD come from here)
+FAQ = [
+    ("Is Background Killer really free?",
+     "Yes. There are no credits, accounts or watermarks, and you can cut out as many photos as you like. We may add ads to the page later to pay for the domain."),
+    ("Is this a remove.bg alternative?",
+     'Yes. remove.bg has announced that its standalone website will close on 1 December 2026. Background Killer does the same basic job, and the free download is full size. <a href="/remove-bg-alternative">Here is how they compare</a>.'),
+    ("Do you upload my photo?",
+     "No. The cutout model runs in your browser, on your own computer, so your photo is not sent to us or anyone else. The model is about 46 MB, so it downloads the first time you visit and is saved for next time."),
+    ("How big can the download be?",
+     "It matches your original photo, pixel for pixel. Nothing is scaled down. Very large photos use a lot of memory, so on an older phone a huge image may fail. If that happens, try a smaller version."),
+    ("How do I remove the background from a photo?",
+     'Click Upload image, or drop a photo on the page, and wait a moment for the cutout. Then choose a background (transparent, white, black or any color) and press Download full size. <a href="/remove-background-from-image">The full steps are here</a>.'),
+    ("Which files work?",
+     "JPG, PNG and WebP. HEIC photos work in browsers that can open them, such as Safari. Downloads are PNG or WebP, and both keep transparency."),
+    ("What if it misses a spot?",
+     "Open Fix edges, choose Erase to brush away leftovers, or Restore to bring back anything it cut by mistake. Undo is right there."),
+    ("What are the checkerboard squares?",
+     "They show transparent areas in the preview. They are not part of the file you download."),
+    ("Can I do a lot of photos at once?",
+     'Yes. Add as many as you like, then download them one by one or all together as a zip. This is handy for <a href="/product-photo-background-remover">product photos</a>.'),
+    ("Who is the cat?",
+     "That is Claw. He handles the backgrounds."),
+]
+
+def strip_tags(s):
+    return re.sub(r"<[^>]+>", "", s)
+
+def faq_html():
+    return "\n".join('<details><summary>%s</summary><p>%s</p></details>' % (q, a) for q, a in FAQ)
+
+def home_jsonld():
+    app = {
+        "@context": "https://schema.org", "@type": "WebApplication",
+        "name": "Background Killer", "url": SITE + "/",
+        "description": "Free background remover that runs in your browser. Cut out the subject of a photo and download a full-size transparent PNG with no account and no upload.",
+        "applicationCategory": "MultimediaApplication", "operatingSystem": "Any (modern web browser)",
+        "browserRequirements": "Requires JavaScript and WebAssembly",
+        "offers": {"@type": "Offer", "price": "0", "priceCurrency": "EUR"},
+        "creator": {"@type": "Organization", "name": "Pigrosoft", "url": "https://pigrosoft.com/"},
+    }
+    faq = {"@context": "https://schema.org", "@type": "FAQPage",
+           "mainEntity": [{"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": strip_tags(a)}} for q, a in FAQ]}
+    return '<script type="application/ld+json">%s</script>\n<script type="application/ld+json">%s</script>' % (json.dumps(app), json.dumps(faq))
+
+# ---------------------------------------------------------------- guides
+page("/remove-bg-alternative",
+     "Free remove.bg Alternative, Full Size | Background Killer",
+     "remove.bg is closing its standalone site on 1 December 2026. Background Killer is a free alternative with full-size downloads, no account and no upload.",
+     """
+<h1>A free remove.bg alternative</h1>
+<p class="lead">remove.bg has announced that its standalone website and self-serve API will close on 1 December 2026, when background removal moves into Canva. If you used remove.bg to cut out photos, Background Killer does the same job for free, in your browser.</p>
+""" + CTA + """
+<h2>What stays the same</h2>
+<p>You add a photo, the subject is cut out, and you download a PNG with a transparent background. You can also put the subject on white, black or any color before you download.</p>
+<h2>What is different</h2>
+<ul>
+<li><strong>Full size is free.</strong> remove.bg's help page says free use covers images up to 0.25 megapixels, with higher resolution on paid plans. Background Killer downloads your cutout at the same pixel size as your original photo.</li>
+<li><strong>No account and no credits.</strong> There is nothing to sign up for and nothing to run out of.</li>
+<li><strong>Your photo stays on your device.</strong> The cutout model runs in your browser, so the image is never uploaded.</li>
+<li><strong>Batches.</strong> Add a stack of photos, then download them one by one or as a single zip.</li>
+<li><strong>A brush for edges.</strong> Erase leftovers, or restore parts the model cut by mistake.</li>
+</ul>
+<h2>What to know before you switch</h2>
+<ul>
+<li>Background Killer is a website. It is not an API or a plugin, so it does not replace remove.bg's API or its Photoshop plugin.</li>
+<li>Speed depends on your computer, because the work happens on your device. Expect some seconds per photo, and longer on an old phone.</li>
+<li>The first visit downloads a 46 MB model. After that it is saved in your browser.</li>
+<li>Results are good on most photos but not perfect. Very fine hair, glass and see-through objects can need a touch-up with the brush.</li>
+</ul>
+<h2>How to switch in four steps</h2>
+<ol>
+<li>Open <a href="/">backgroundkiller.com</a> and click Upload image, or drop a photo on the page.</li>
+<li>Wait for the cutout. The first time takes longer because the model downloads once.</li>
+<li>Tidy the edges with Erase and Restore if you need to.</li>
+<li>Pick a background and press Download full size.</li>
+</ol>
+""" + related("/remove-bg-alternative") + "\n" + CTA,
+     crumb="Free remove.bg alternative")
+
+page("/remove-background-from-image",
+     "Remove the Background From an Image for Free | Background Killer",
+     "Remove the background from any image in four steps. Free, no sign-up, and the download keeps the full size of your original photo.",
+     """
+<h1>Remove the background from an image</h1>
+<p class="lead">You can remove the background from a photo in under a minute, for free, without an account. The cutout happens in your browser, and the download keeps your photo's full size.</p>
+""" + CTA + """
+<h2>Four steps</h2>
+<ol>
+<li><strong>Add your photo.</strong> Click Upload image, drag a file onto the page, or paste one with Ctrl+V or &#8984;V. JPG, PNG and WebP work, and HEIC works in browsers that can open it, such as Safari.</li>
+<li><strong>Wait for the cutout.</strong> The first visit downloads the cutout model once, about 46 MB, and then keeps it for next time. After that, each photo takes some seconds, depending on your computer.</li>
+<li><strong>Fix the edges if needed.</strong> In Fix edges, choose Erase to brush away leftover background, or Restore to bring back parts of the subject that were cut by mistake. Change the brush size to suit the detail, and use Undo if you slip.</li>
+<li><strong>Choose a background and download.</strong> Keep it transparent, or choose white, black, red or any color. Press Download full size, or Copy image to paste it straight into another app.</li>
+</ol>
+<h2>Tips for a cleaner cutout</h2>
+<ul>
+<li>Use the original photo, not a screenshot, so you keep all the pixels.</li>
+<li>Contrast helps. A subject that differs from its background in color or brightness cuts out more cleanly.</li>
+<li>Keep the whole subject inside the frame. The model handles a subject cropped by the edge, but the result is usually tidier when nothing is cut off.</li>
+<li>Use the Edges slider to make the outline softer or sharper, and Trim to the subject to crop away empty space.</li>
+</ul>
+<h2>Which format to download</h2>
+<p>PNG works almost everywhere and keeps transparency. WebP also keeps transparency and makes smaller files, which is useful for websites. A JPG cannot be transparent, so choose a solid background color if you need one.</p>
+<h2>Common problems</h2>
+<ul>
+<li><strong>Part of the subject is missing.</strong> Switch to Restore and brush over it.</li>
+<li><strong>A bit of background is left.</strong> Switch to Erase and brush over it.</li>
+<li><strong>It is slow.</strong> Large photos take longer, because your own device does the work. Close other heavy tabs and try again.</li>
+<li><strong>The file is big.</strong> The download matches your original size on purpose. Choose WebP for a smaller file.</li>
+</ul>
+""" + related("/remove-background-from-image") + "\n" + CTA,
+     crumb="Remove the background from an image")
+
+page("/make-png-transparent",
+     "Make a Transparent PNG From Any Photo | Background Killer",
+     "Turn a photo into a PNG with a transparent background. Free, runs in your browser, and keeps the full resolution of your original image.",
+     """
+<h1>Make a transparent PNG</h1>
+<p class="lead">A transparent PNG is a picture with no background, so it can sit on top of any color, photo or slide. Background Killer makes one from an ordinary photo in a few clicks, for free.</p>
+""" + CTA + """
+<h2>How transparency works</h2>
+<p>PNG and WebP files can store an alpha channel, which says how see-through each pixel is. Where the alpha is zero, you see whatever is behind the image. JPG files have no alpha channel, so they can never be transparent.</p>
+<h2>Make one in three steps</h2>
+<ol>
+<li>Add your photo on <a href="/">backgroundkiller.com</a>.</li>
+<li>Leave the background set to transparent, which is the checkerboard swatch.</li>
+<li>Choose PNG as the format and press Download full size.</li>
+</ol>
+<p>The checkerboard you see in the preview only marks the empty areas. It is not baked into the file.</p>
+<h2>Check that your file is really transparent</h2>
+<p>Open the PNG in a design tool or presentation app and place it over a colored shape. If the color shows through around the subject, the file is transparent. Many image viewers show a white or gray background instead, which can make a transparent file look solid.</p>
+<h2>Where transparent PNGs are useful</h2>
+<ul>
+<li>Slides and documents, such as Keynote, PowerPoint and Google Slides.</li>
+<li>Design tools, such as Figma and Canva, for collages and mockups.</li>
+<li>Websites, where a cutout can sit on any section color.</li>
+<li>Stickers, labels and print layouts.</li>
+</ul>
+<h2>What it does not do well</h2>
+<p>Background Killer is built for photos with a clear subject. For flat logos or graphics with a single background color, a color-based eraser in an image editor can give a sharper edge. For photos with fine hair or glass, expect to touch up the edges with the Erase and Restore brush.</p>
+""" + related("/make-png-transparent") + "\n" + CTA,
+     crumb="Make a transparent PNG")
+
+page("/product-photo-background-remover",
+     "Remove the Background From Product Photos | Background Killer",
+     "Cut out product photos in bulk and put them on pure white or any color. Free, full-size downloads, and no upload.",
+     """
+<h1>Remove backgrounds from product photos</h1>
+<p class="lead">Clean, consistent backgrounds make a shop look tidier, and many marketplaces expect a plain white background on the main photo. Background Killer cuts out a whole batch of product photos and saves them as a zip.</p>
+""" + CTA + """
+<h2>A batch in five steps</h2>
+<ol>
+<li>Add all your photos at once. They are cut out one after another.</li>
+<li>Click each one in the tray to check the result, and fix any edges with Erase and Restore.</li>
+<li>Choose the white swatch for a pure white background. Marketplaces such as Amazon ask for pure white on main images, so check the current rules for the one you sell on.</li>
+<li>Keep Trim to the subject switched on and set the same margin for every photo, so the products look consistent.</li>
+<li>Choose PNG or WebP and press Download all as .zip.</li>
+</ol>
+<h2>Take photos that cut out well</h2>
+<ul>
+<li>Shoot on a plain surface in soft light.</li>
+<li>Keep the whole product in the frame, with a little space around it.</li>
+<li>Avoid white products on a white surface. The model needs some contrast to find the edge.</li>
+<li>Shoot at full camera resolution. The download keeps the size you give it, and many marketplaces want at least 1,000 pixels on the long side.</li>
+</ul>
+<h2>Things to know</h2>
+<ul>
+<li>Shadows disappear with the background. If you want a soft shadow under the product, add one in your editor afterwards.</li>
+<li>Glass, bottles and shiny edges are hard for any automatic tool. Expect to use the brush on them.</li>
+<li>Your photos are processed on your own computer and are never uploaded, which is useful for unreleased products.</li>
+</ul>
+""" + related("/product-photo-background-remover") + "\n" + CTA,
+     crumb="Product photo backgrounds")
+
+# ---------------------------------------------------------------- legal pages
+page("/imprint",
+     "Imprint | Background Killer",
+     "Legal notice (Impressum) for backgroundkiller.com.",
+     """
+<h1>Imprint</h1>
+<p><a href="#de">Deutsche Version</a></p>
+<h2>Legal notice</h2>
+<p>Information according to &sect; 5 DDG (German Digital Services Act).</p>
+<p><strong>Provider</strong><br>Jeffrey Humble (Pigrosoft)<br>Peschkestr. 5<br>12161 Berlin<br>Germany</p>
+<p><strong>Contact</strong><br>Email: <a href="mailto:support@pigrosoft.com">support@pigrosoft.com</a></p>
+<p><strong>VAT ID</strong><br>VAT identification number according to &sect; 27a of the German VAT Act (UStG): DE334424725</p>
+<p><strong>Responsible for content according to &sect; 18(2) MStV</strong><br>Jeffrey Humble, Peschkestr. 5, 12161 Berlin, Germany</p>
+<h2>Consumer dispute resolution</h2>
+<p>We are neither obliged nor willing to take part in dispute resolution proceedings before a consumer arbitration board.</p>
+<h2 id="de" lang="de">Impressum</h2>
+<div lang="de">
+<p>Angaben gem&auml;&szlig; &sect; 5 DDG.</p>
+<p><strong>Anbieter</strong><br>Jeffrey Humble (Pigrosoft)<br>Peschkestr. 5<br>12161 Berlin<br>Deutschland</p>
+<p><strong>Kontakt</strong><br>E-Mail: <a href="mailto:support@pigrosoft.com">support@pigrosoft.com</a></p>
+<p><strong>Umsatzsteuer-ID</strong><br>Umsatzsteuer-Identifikationsnummer gem&auml;&szlig; &sect; 27a UStG: DE334424725</p>
+<p><strong>Verantwortlich f&uuml;r den Inhalt nach &sect; 18 Abs. 2 MStV</strong><br>Jeffrey Humble, Peschkestr. 5, 12161 Berlin, Deutschland</p>
+<h3>Verbraucherstreitbeilegung</h3>
+<p>Wir sind weder verpflichtet noch bereit, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.</p>
+</div>
+""", robots="index,follow")
+
+page("/privacy",
+     "Privacy Policy | Background Killer",
+     "How backgroundkiller.com handles data. Photos are processed in your browser and are not uploaded.",
+     """
+<h1>Privacy</h1>
+<p>Last updated: %(u)s. <a href="#de">Deutsche Version</a></p>
+<h2>Controller</h2>
+<p>Jeffrey Humble (Pigrosoft), Peschkestr. 5, 12161 Berlin, Germany. Email: <a href="mailto:support@pigrosoft.com">support@pigrosoft.com</a>. See also the <a href="/imprint">imprint</a>.</p>
+<h2>The short version</h2>
+<p>Background Killer removes backgrounds inside your browser. The photos you add are processed on your own device and are not uploaded to us or to anyone else. The site has no accounts, no tracking cookies, no analytics and no advertising at the moment.</p>
+<h2>Your photos</h2>
+<p>When you add an image, your browser reads it and the cutout model runs on your device. The image, the cutout and your edits stay in your browser's memory and are gone when you close or reload the page, unless you download them. We never receive them.</p>
+<h2>Data stored on your device</h2>
+<p>The cutout model (about 46 MB) is saved in your browser's cache so that it only has to download once. This is needed to provide the function you asked for, and it contains no personal information. You can remove it at any time by clearing the site's data in your browser settings. We do not set cookies.</p>
+<h2>Hosting and server logs</h2>
+<p>The site is delivered by Cloudflare, Inc. (USA). When you open a page, your browser sends a request that includes your IP address, the time, the page requested and technical details such as your browser type. Cloudflare processes this data to deliver the site and keep it secure, and may keep it in server logs. We do not run our own logs and do not see your photos in these requests. The legal basis is Art. 6(1)(f) GDPR, our interest in a secure and reliable website. Where data is transferred to the United States, this relies on the safeguards described in Cloudflare's data processing terms, such as the EU-US Data Privacy Framework and standard contractual clauses. Cloudflare's own privacy policy applies as well.</p>
+<h2>Fonts and other resources</h2>
+<p>Fonts, scripts and images are served from this site itself. Your browser does not contact Google or other third parties to display it.</p>
+<h2>Contacting us</h2>
+<p>If you email us, we use your message and address only to reply and keep them as long as needed for that purpose. The legal basis is Art. 6(1)(f) GDPR, or Art. 6(1)(b) if your message relates to a contract.</p>
+<h2>Advertising</h2>
+<p>The site does not currently show ads. If we add them, we will update this policy first and ask for your consent where the law requires it, before any advertising scripts load.</p>
+<h2>Your rights</h2>
+<p>You have the right to access, rectification, erasure, restriction of processing, data portability and objection under the GDPR. You can also lodge a complaint with a supervisory authority, for example the Berlin Commissioner for Data Protection and Freedom of Information (Berliner Beauftragte f&uuml;r Datenschutz und Informationsfreiheit), Alt-Moabit 59-61, 10555 Berlin, Germany.</p>
+
+<h2 id="de" lang="de">Datenschutzerkl&auml;rung</h2>
+<div lang="de">
+<p>Stand: 4. November 2026.</p>
+<h3>Verantwortlicher</h3>
+<p>Jeffrey Humble (Pigrosoft), Peschkestr. 5, 12161 Berlin, Deutschland. E-Mail: <a href="mailto:support@pigrosoft.com">support@pigrosoft.com</a>. Siehe auch das <a href="/imprint#de">Impressum</a>.</p>
+<h3>Kurzfassung</h3>
+<p>Background Killer entfernt Hintergr&uuml;nde direkt in Ihrem Browser. Die Bilder, die Sie hinzuf&uuml;gen, werden auf Ihrem eigenen Ger&auml;t verarbeitet und nicht an uns oder Dritte hochgeladen. Die Website hat derzeit keine Benutzerkonten, keine Tracking-Cookies, keine Analyse und keine Werbung.</p>
+<h3>Ihre Fotos</h3>
+<p>Wenn Sie ein Bild hinzuf&uuml;gen, liest Ihr Browser es ein, und das Modell zum Freistellen l&auml;uft auf Ihrem Ger&auml;t. Bild, Freisteller und Ihre Bearbeitungen bleiben im Arbeitsspeicher Ihres Browsers und sind weg, sobald Sie die Seite schlie&szlig;en oder neu laden, sofern Sie sie nicht herunterladen. Wir erhalten sie nie.</p>
+<h3>Auf Ihrem Ger&auml;t gespeicherte Daten</h3>
+<p>Das Modell (etwa 46 MB) wird im Cache Ihres Browsers gespeichert, damit es nur einmal geladen werden muss. Das ist f&uuml;r die von Ihnen gew&uuml;nschte Funktion erforderlich und enth&auml;lt keine personenbezogenen Daten. Sie k&ouml;nnen es jederzeit entfernen, indem Sie die Websitedaten in den Browsereinstellungen l&ouml;schen. Wir setzen keine Cookies.</p>
+<h3>Hosting und Server-Logs</h3>
+<p>Die Website wird von Cloudflare, Inc. (USA) ausgeliefert. Beim Aufruf einer Seite sendet Ihr Browser eine Anfrage, die Ihre IP-Adresse, die Uhrzeit, die angeforderte Seite und technische Angaben wie den Browsertyp enth&auml;lt. Cloudflare verarbeitet diese Daten, um die Website auszuliefern und abzusichern, und speichert sie gegebenenfalls in Server-Logs. Wir f&uuml;hren keine eigenen Logs, und Ihre Fotos sind nicht Teil dieser Anfragen. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO, unser Interesse an einer sicheren und zuverl&auml;ssigen Website. Soweit Daten in die USA &uuml;bermittelt werden, beruht dies auf den Garantien aus den Datenverarbeitungsbedingungen von Cloudflare, etwa dem EU-US Data Privacy Framework und Standardvertragsklauseln. Es gilt zus&auml;tzlich die Datenschutzerkl&auml;rung von Cloudflare.</p>
+<h3>Schriften und andere Ressourcen</h3>
+<p>Schriften, Skripte und Bilder werden von dieser Website selbst ausgeliefert. Ihr Browser nimmt dazu keinen Kontakt zu Google oder anderen Dritten auf.</p>
+<h3>Kontakt</h3>
+<p>Wenn Sie uns eine E-Mail schreiben, verwenden wir Ihre Nachricht und Adresse nur, um zu antworten, und speichern sie so lange, wie es daf&uuml;r erforderlich ist. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO, bei vertragsbezogenen Anfragen Art. 6 Abs. 1 lit. b DSGVO.</p>
+<h3>Werbung</h3>
+<p>Die Website zeigt derzeit keine Werbung. Falls wir welche einf&uuml;hren, aktualisieren wir zuvor diese Erkl&auml;rung und holen Ihre Einwilligung ein, soweit das Gesetz es verlangt, bevor Werbeskripte geladen werden.</p>
+<h3>Ihre Rechte</h3>
+<p>Sie haben nach der DSGVO das Recht auf Auskunft, Berichtigung, L&ouml;schung, Einschr&auml;nkung der Verarbeitung, Daten&uuml;bertragbarkeit und Widerspruch. Sie k&ouml;nnen sich au&szlig;erdem bei einer Aufsichtsbeh&ouml;rde beschweren, zum Beispiel bei der Berliner Beauftragten f&uuml;r Datenschutz und Informationsfreiheit, Alt-Moabit 59-61, 10555 Berlin.</p>
+</div>
+""" % {"u": UPDATED}, robots="index,follow")
+
+page("/terms",
+     "Terms of Use | Background Killer",
+     "The terms for using backgroundkiller.com.",
+     """
+<h1>Terms of use</h1>
+<p>Last updated: %(u)s</p>
+<h2>1. What this is</h2>
+<p>Background Killer is a free tool at backgroundkiller.com that removes the background from images in your browser. It is provided by Jeffrey Humble (Pigrosoft), Berlin (see the <a href="/imprint">imprint</a>). By using it, you agree to these terms.</p>
+<h2>2. Free of charge</h2>
+<p>The service is free. We may change it, limit it or stop it at any time, and we may show advertising in the future. If we do, we will say so in the <a href="/privacy">privacy policy</a> first.</p>
+<h2>3. Your images</h2>
+<p>Your images are processed on your own device and are not uploaded to us. They stay yours, and we claim no rights in them or in the results. You confirm that you have the right to edit the images you use, and that they do not break the law or the rights of others.</p>
+<h2>4. Acceptable use</h2>
+<p>Do not use the site to break the law, to attack or overload it, or to copy it in a way that harms the service. You may link to it freely.</p>
+<h2>5. Results</h2>
+<p>Automatic cutouts are not always perfect. We do not promise that a result is accurate, complete or suitable for a particular purpose. Check your results before you rely on them.</p>
+<h2>6. Liability</h2>
+<p>We are liable without limit for intent and gross negligence, for injury to life, body or health, and where the law requires it, such as under the Product Liability Act. For slightly negligent breaches of an essential obligation, liability is limited to the foreseeable damage typical for this kind of service. Otherwise we are not liable for slight negligence. This does not limit your statutory rights as a consumer.</p>
+<h2>7. Software and content from others</h2>
+<p>Background Killer includes software, a model and fonts from other authors, which are used under their own licenses. See <a href="/licenses">Licenses and credits</a>.</p>
+<h2>8. Changes and law</h2>
+<p>We may update these terms, and the version on this page applies from the date shown. German law applies, except that mandatory consumer protection rules of the country where you live are not affected.</p>
+<h2>9. Contact</h2>
+<p><a href="mailto:support@pigrosoft.com">support@pigrosoft.com</a></p>
+""" % {"u": UPDATED}, robots="index,follow")
+
+page("/licenses",
+     "Licenses and Credits | Background Killer",
+     "The model, software, fonts and images behind Background Killer, with their licenses.",
+     """
+<h1>Licenses and credits</h1>
+<p class="lead">Background Killer is built on open work by other people. Here is what it uses and under which terms.</p>
+<h2>The cutout model</h2>
+<p>The model that finds the subject in your photo is <strong>ISNet general-use</strong>, from the DIS project (Dichotomous Image Segmentation) by Xuebin Qin and colleagues, released under the Apache License 2.0. It is described in &ldquo;Highly Accurate Dichotomous Image Segmentation&rdquo; (ECCV 2022). We converted it to the ONNX format and compressed it to 8 bits so that it runs in a browser. It runs entirely on your device.</p>
+<ul>
+<li><a href="/licenses/isnet-model-NOTICE.txt">Model notice and changes</a></li>
+<li><a href="/licenses/apache-2.0.txt">Apache License 2.0</a></li>
+</ul>
+<h2>Software</h2>
+<ul>
+<li><strong>ONNX Runtime Web</strong>, by Microsoft, runs the model in your browser. MIT license. <a href="/licenses/onnxruntime-web-MIT.txt">License text</a>.</li>
+<li><strong>JSZip</strong>, by Stuart Knightley and contributors, builds the zip file. Used under the MIT license. <a href="/licenses/jszip-MIT.txt">License text</a>.</li>
+</ul>
+<h2>Fonts</h2>
+<ul>
+<li><strong>Anton</strong>, by the Anton Project Authors, used for headlines. SIL Open Font License 1.1. <a href="/licenses/anton-OFL-1.1.txt">License text</a>.</li>
+<li><strong>Inter</strong>, by the Inter Project Authors, used for text. SIL Open Font License 1.1. <a href="/licenses/inter-OFL-1.1.txt">License text</a>.</li>
+</ul>
+<h2>Images</h2>
+<p>The sample kitten photos, the illustration of Claw, and the alley photograph on the home page were made with AI image tools for this site. They are not photographs of real places or animals.</p>
+<h2>Questions</h2>
+<p>If you think something here is credited wrongly, please write to <a href="mailto:support@pigrosoft.com">support@pigrosoft.com</a>.</p>
+""", robots="index,follow")
+
+# ---------------------------------------------------------------- 404
+html404 = head("Page not found | Background Killer", "This page has gone into hiding.", "/404", '<meta name="robots" content="noindex">\n') + HEADER + """
+<main class="page article">
+<h1>This page has gone into hiding.</h1>
+<p>Even the cat won't say where it went. There is a perfectly good background to remove on the home page.</p>
+<p class="cta"><a class="btn btn-primary btn-lg" href="/">Back to the home page</a></p>
+</main>
+""" + FOOTER + "\n</body>\n</html>\n"
+(ROOT / "404.html").write_text(html404, encoding="utf-8")
+
+# ---------------------------------------------------------------- sitemap and robots
+paths = ["/"] + [g[0] for g in GUIDES] + [l[0] for l in LEGAL]
+sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+for p in paths:
+    sm += "  <url><loc>%s%s</loc><lastmod>2026-11-04</lastmod></url>\n" % (SITE, p if p != "/" else "/")
+sm += "</urlset>\n"
+(ROOT / "sitemap.xml").write_text(sm, encoding="utf-8")
+(ROOT / "robots.txt").write_text("User-agent: *\nAllow: /\n\nSitemap: %s/sitemap.xml\n" % SITE, encoding="utf-8")
+
+# ---------------------------------------------------------------- refresh index.html
+idx = (ROOT / "index.html").read_text(encoding="utf-8")
+idx = re.sub(r"<footer class=\"site-footer\">.*?</footer>", lambda m: FOOTER, idx, flags=re.S)
+idx = re.sub(r"(<!-- faq:start -->).*?(<!-- faq:end -->)", lambda m: m.group(1) + "\n" + faq_html() + "\n        " + m.group(2), idx, flags=re.S)
+idx = re.sub(r"(<!-- jsonld:start -->).*?(<!-- jsonld:end -->)", lambda m: m.group(1) + "\n" + home_jsonld() + "\n" + m.group(2), idx, flags=re.S)
+(ROOT / "index.html").write_text(idx, encoding="utf-8")
+print("built", len(paths), "pages")
