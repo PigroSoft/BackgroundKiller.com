@@ -321,3 +321,45 @@ body.working .protip { display: none; }
 .method[aria-pressed="true"] span { color: #444; }
 .method:disabled { opacity: .45; cursor: not-allowed; }
 .method.has:not([aria-pressed="true"]) b::after { content: " ✓"; color: var(--muted); font-weight: 400; }
+
+.tray-head .btn-sm { min-height: 38px; padding: 6px 16px; font-size: 14px; margin-left: auto; }
+.tray-head span { margin-right: 4px; }
+
+/* Batch view */
+.batch { display: none; max-width: 1180px; margin: 0 auto; padding: 24px 5% 40px; }
+body.batch-view.working .batch { display: block; }
+body.batch-view.working .workspace { display: none; }
+.batch-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px 24px; flex-wrap: wrap; }
+.batch h2 { margin: 0 0 4px; font: 400 clamp(30px, 4vw, 44px)/1.05 var(--display); font-style: italic; text-transform: uppercase; }
+.batch-head p { margin: 0; color: var(--muted); font-size: 15px; }
+.batch-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.bmeter { height: 10px; margin: 20px 0 10px; border-radius: 999px; background: #ffffff1c; overflow: hidden; position: relative; }
+.bmeter i { display: block; height: 100%; width: 0; border-radius: 999px; transition: width .6s ease; background: repeating-linear-gradient(115deg, var(--red) 0 14px, #ff7a6b 14px 28px); background-size: 40px 100%; animation: stripes 1s linear infinite; }
+.batch.finished .bmeter i { animation: none; background: var(--ok); }
+.batch-line { margin: 0 0 18px; min-height: 22px; color: #c9ccc8; font-size: 15px; font-style: italic; }
+.bgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.btile { position: relative; border-radius: 14px; overflow: hidden; background: var(--panel); border: 1px solid var(--line); cursor: pointer; text-align: left; padding: 0; color: inherit; }
+.btile:hover, .btile:focus-visible { border-color: var(--text); }
+.btile .bimg { aspect-ratio: 1; background-color: #26292b; background-size: contain; background-position: center; background-repeat: no-repeat; transition: opacity .3s; }
+.btile[data-st="queued"] .bimg { opacity: .35; }
+.btile[data-st="cutting"] .bimg { opacity: .8; }
+.btile .bfoot { display: flex; align-items: center; gap: 6px; padding: 8px 10px; font-size: 12px; color: var(--muted); }
+.btile .bfoot b { font-weight: 500; color: #d7d9d5; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; min-width: 0; }
+.btile .bfoot i { width: 8px; height: 8px; border-radius: 50%; background: var(--line-strong); flex: none; }
+.btile[data-st="done"] .bfoot i { background: var(--ok); }
+.btile[data-st="error"] .bfoot i { background: var(--err); }
+.btile[data-st="cutting"] .bfoot i { background: var(--red); animation: pulse 1s infinite; }
+.btile .bscan { position: absolute; left: 0; right: 0; top: 0; aspect-ratio: 1; pointer-events: none; display: none; overflow: hidden; }
+.btile[data-st="cutting"] .bscan { display: block; }
+.btile .bscan::after { content: ""; position: absolute; left: 0; right: 0; height: 3px; top: 0; background: linear-gradient(90deg, transparent, var(--red), transparent); box-shadow: 0 0 16px var(--red); animation: scan 1.6s ease-in-out infinite alternate; }
+.btile .bx { position: absolute; top: 6px; right: 6px; width: 26px; height: 26px; border-radius: 50%; border: 0; background: #101112cc; color: var(--text); font-size: 15px; line-height: 1; opacity: 0; transition: opacity .15s; }
+.btile:hover .bx, .btile:focus-within .bx { opacity: 1; }
+.btile[data-st="done"].fresh { animation: pop .45s ease; }
+.backbtn { border: 1px solid var(--line-strong); background: transparent; color: var(--text); border-radius: 999px; padding: 5px 14px; font-size: 13px; font-weight: 600; margin-right: 10px; }
+.backbtn:hover { border-color: var(--red); }
+.busy::after { content: ""; position: absolute; left: 0; right: 0; height: 3px; top: 0; background: linear-gradient(90deg, transparent, var(--red), transparent); box-shadow: 0 0 18px var(--red); animation: scan 1.8s ease-in-out infinite alternate; }
+@keyframes scan { from { top: 0; } to { top: calc(100% - 3px); } }
+@keyframes stripes { to { background-position: 40px 0; } }
+@keyframes pop { 0% { transform: scale(.94); } 60% { transform: scale(1.03); } 100% { transform: scale(1); } }
+@keyframes pulse { 50% { opacity: .35; } }
+@media (max-width: 760px) { .bgrid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; } .batch-actions { width: 100%; } .batch-actions .btn { flex: 1; } }

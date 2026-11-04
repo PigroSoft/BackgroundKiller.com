@@ -74,16 +74,17 @@
       engineProgress('Downloading the cutout model', 'one time only', 0);
       var model = await fetchModel();
       engineProgress('Warming up', 'Setting up the cutting engine on your device', null, 'Starting engine');
-      var eng;
+      var eng, usedWorker = true;
       try { eng = await workerEngine(model.slice(0)); }
       catch (err) {
+        usedWorker = false;
         console.warn('Worker engine failed, using main thread:', err);
         await loadScript(ORT_URL);
         await loadScript('engine.js');
         await self.CleanCutEngine.init(model, BASE);
         eng = { run: function (rgba) { return self.CleanCutEngine.run(rgba); } };
       }
-      engineReady = true;
+      engineReady = true; modelBytes = model; pool.push({ eng: eng, busy: false, main: !usedWorker });
       $('engineChip').classList.remove('indet'); $('engineBar').style.width = '100%'; $('engineText').textContent = 'Engine ready';
       clearTimeout(chipTimer); chipTimer = setTimeout(function () { $('engineChip').hidden = true; }, 2600);
       return eng;
@@ -131,63 +132,169 @@
     files = Array.prototype.filter.call(files, function (f) { return f && f.type && f.type.indexOf('image/') === 0; });
     if (!files.length) { toast('Those files are not images this browser can read.'); return; }
     document.body.classList.add('working'); window.scrollTo(0, 0);
+    if (files.length >= 3) setView('batch'); else if (view === 'batch' && items.length) setView('batch');
     for (var i = 0; i < files.length; i++) {
       var f = files[i], it = { id: nextId++, name: f.name || ('pasted-' + Date.now() + '.png'), file: f, status: 'queued', strokes: [], redo: [], masks: {}, mattes: {}, matte: null, method: 'standard', rerun: null };
-      try { it.img = await decode(f); it.w = it.img.width; it.h = it.img.height; }
+      try {
+        var im = await decode(f); it.w = im.width; it.h = im.height;
+        var ss = Math.min(1, 1400 / Math.max(it.w, it.h)); it.small = newCanvas(Math.max(1, Math.round(it.w * ss)), Math.max(1, Math.round(it.h * ss)));
+        ctx2d(it.small).drawImage(im, 0, 0, it.small.width, it.small.height);
+        if (im.close) im.close();
+      }
       catch (e) { it.status = 'error'; it.error = 'This browser cannot open that file.'; }
       items.push(it);
       if (i === files.length - 1 || !current) select(it);
+      renderTray(); processQueue();
     }
-    renderTray();
-    processQueue();
   }
 
-  var processing = false;
-  /* Newest request first, so the photo on screen is the next one to be cut. A job already running is never interrupted. */
-  function nextJob() {
-    for (var i = items.length - 1; i >= 0; i--) {
-      var it = items[i];
-      if (it.status === 'queued') return { it: it, method: 'standard' };
-      if (it.status === 'done' && it.rerun) return { it: it, method: it.rerun };
-    }
+  /* Only a few full-size photos are held in memory at once, so a batch of 20 big photos stays light. */
+  function loadImg(it) {
+    if (it.img) return Promise.resolve(it.img);
+    if (!it._loading) it._loading = decode(it.file).then(function (im) { it.img = im; it._loading = null; trimImgs(); return im; }, function (e) { it._loading = null; throw e; });
+    return it._loading;
+  }
+  function releaseImg(it) { if (it.img) { try { if (it.img.close) it.img.close(); } catch (e) {} it.img = null; } }
+  function trimImgs() { items.forEach(function (x) { if (x !== current && !isActive(x) && x.img) releaseImg(x); }); }
+  /* ---------- Job runner: a few engines work side by side, newest request first ---------- */
+  var pool = [], modelBytes = null, workersOk = true, starting = false, growing = false;
+  function isActive(x) { return x.status === 'cutting' || !!x.running; }
+  function jobFor(it) {
+    if (it.status === 'queued') return { it: it, method: 'standard' };
+    if (it.status === 'done' && it.rerun && !it.running) return { it: it, method: it.rerun };
     return null;
   }
-  function waitingNote() { return { text: 'Next in line', sub: 'Another photo is being cut out first. This one starts as soon as it finishes.' }; }
-  async function processQueue() {
-    if (processing) return; processing = true;
-    try {
-      var engine;
-      try { engine = await startEngine(); }
-      catch (err) {
-        busy(false); toast('The cutout engine could not load. ' + err.message);
-        items.forEach(function (x) { if (x.status === 'queued') { x.status = 'error'; x.error = 'The cutout engine could not load. Reload the page and try again.'; } x.rerun = null; });
-        renderTray(); render(); processing = false; return;
-      }
-      for (;;) {
-        var job = nextJob(); if (!job) break;
-        var it = job.it, method = job.method, first = it.status === 'queued';
-        if (first) it.status = 'cutting'; else it.running = method;
-        renderTray();
-        if (current === it) render();
-        try {
-          var mask = await cutWith(engine, it, method);
-          it.masks[method] = mask;
-          await new Promise(function (r) { setTimeout(r, 0); });
-          it.mattes[method] = buildMatte(it, mask);
-          if (first || it.method === method || it.rerun === method) { it.method = method; it.mask = mask; it.matte = it.mattes[method]; }
-          if (first) it.status = 'done';
-          it.thumb = null; it._mc = null; it._bb = undefined;
-        } catch (err) {
-          console.error(err);
-          if (first) { it.status = 'error'; it.error = err.message; }
-          else { toast('That way did not work: ' + err.message); it.method = Object.keys(it.masks).indexOf(it.method) >= 0 ? it.method : 'standard'; it.mask = it.masks[it.method]; it.matte = it.mattes[it.method] || null; }
-        }
-        if (!first) { it.running = null; if (it.rerun === method) it.rerun = null; }
-        if (current === it) { busy(false); render(); }
-        renderTray();
-      }
-    } finally { processing = false; busy(false); updateButtons(); if (current) render(); }
+  /* The photo on screen goes first, then the rest in the order they were added. */
+  function nextJob() {
+    var j = current && jobFor(current); if (j) return j;
+    for (var i = 0; i < items.length; i++) { j = jobFor(items[i]); if (j) return j; }
+    return null;
   }
+  function jobsWaiting() { return items.filter(function (x) { return x.status === 'queued' || (x.status === 'done' && x.rerun && !x.running); }).length; }
+  function waitingNote() { return { text: 'Next in line', sub: 'Other photos are being cut out first. This one starts as soon as it can.' }; }
+  function wantWorkers() {
+    if (!workersOk || (pool[0] && pool[0].main)) return 1;
+    return Math.max(1, Math.min(3, Math.floor(((navigator.hardwareConcurrency || 4)) / 2)));
+  }
+  async function growPool() {
+    if (growing || !modelBytes) return; growing = true;
+    try {
+      while (pool.length < wantWorkers() && jobsWaiting() + pool.filter(function (s) { return s.busy; }).length > pool.length) {
+        try { var e = await workerEngine(modelBytes.slice(0)); pool.push({ eng: e, busy: false }); pump(); }
+        catch (err) { workersOk = false; break; }
+      }
+    } finally { growing = false; }
+  }
+  function processQueue() { pump(); }
+  function pump() {
+    if (!pool.length) {
+      if (!starting) {
+        starting = true;
+        startEngine().then(function () { starting = false; pump(); }, function (err) {
+          starting = false; busy(false); toast('The cutout engine could not load. ' + err.message);
+          items.forEach(function (x) { if (x.status === 'queued') { x.status = 'error'; x.error = 'The cutout engine could not load. Reload the page and try again.'; } x.rerun = null; });
+          renderTray(); render();
+        });
+      }
+      return;
+    }
+    for (;;) {
+      var slot = pool.find(function (s) { return !s.busy; }); if (!slot) break;
+      var job = nextJob(); if (!job) break;
+      runJob(slot, job);
+    }
+    if (jobsWaiting() > 0 && pool.length < wantWorkers()) growPool();
+  }
+  async function runJob(slot, job) {
+    slot.busy = true;
+    var it = job.it, method = job.method, first = it.status === 'queued', t0 = Date.now();
+    if (first) it.status = 'cutting'; else it.running = method;
+    it.t0 = Date.now(); renderTray();
+    if (current === it) render();
+    try {
+      await loadImg(it);
+      var mask = await cutWith(slot.eng, it, method);
+      it.masks[method] = mask;
+      await new Promise(function (r) { setTimeout(r, 0); });
+      it.mattes[method] = buildMatte(it, mask);
+      if (first || it.method === method || it.rerun === method) { it.method = method; it.mask = mask; it.matte = it.mattes[method]; }
+      if (first) it.status = 'done';
+      it.thumb = null; it._mc = null; it._bb = undefined;
+      jobMs.push(Date.now() - t0);
+    } catch (err) {
+      console.error(err);
+      if (first) { it.status = 'error'; it.error = err.message; }
+      else { toast('That way did not work: ' + err.message); it.method = Object.keys(it.masks).indexOf(it.method) >= 0 ? it.method : 'standard'; it.mask = it.masks[it.method]; it.matte = it.mattes[it.method] || null; }
+    }
+    if (!first) { it.running = null; if (it.rerun === method) it.rerun = null; }
+    slot.busy = false;
+    trimImgs();
+    if (current === it) { busy(false); render(); }
+    renderTray(); updateButtons();
+    pump();
+  }
+  var jobMs = [];
+
+
+  /* ---------- Batch view: progress for big jobs, so nobody gives up on a long wait ---------- */
+  var view = 'editor', tiles = {}, batchT0 = 0, batchTimer = 0, lineIdx = 0, lineTick = 0, baseTitle = document.title;
+  var LINES = ['Questioning the backgrounds.', 'The backgrounds are not talking.', 'Dusting for fingerprints.', 'Cutting along the dotted line.', 'Straightening the little fedora.', 'Tearing things off at the edges.', 'Taking each background aside for a word.', 'Nobody leaves this alley with a background.'];
+  function setView(v) {
+    view = v; document.body.classList.toggle('batch-view', v === 'batch');
+    $('backBatch').hidden = !(v === 'editor' && items.length >= 3);
+    if (v === 'batch') { window.scrollTo(0, 0); updateBatch(); } else render();
+  }
+  function pendingCount() { return items.filter(function (x) { return x.status === 'queued' || x.status === 'cutting' || x.running || x.rerun; }).length; }
+  function fmtEta(ms) { var s = Math.max(5, Math.round(ms / 1000)); if (s < 60) return 'under a minute'; var m = Math.round(s / 60); return 'about ' + m + (m === 1 ? ' minute' : ' minutes'); }
+  function updateBatch() {
+    var n = items.length, pend = pendingCount();
+    $('backBatch').hidden = !(view === 'editor' && n >= 3);
+    document.title = pend ? '(' + (n - pend) + '/' + n + ') Cutting out… · Background Killer' : (n >= 3 && view === 'batch' ? 'Done · ' + baseTitle : baseTitle);
+    if (view !== 'batch') return;
+    var sec = $('batch'), done = items.filter(function (x) { return x.status === 'done'; }).length, fin = n - pend;
+    if (pend && !batchT0) batchT0 = Date.now(); if (!pend) batchT0 = 0;
+    sec.hidden = false; sec.classList.toggle('finished', !pend && done > 0);
+    var partial = 0, now = Date.now(), avg = jobMs.length ? jobMs.reduce(function (p, q) { return p + q; }, 0) / jobMs.length : 14000;
+    items.forEach(function (x) { if (x.status === 'cutting' && x.t0) partial += Math.min(0.9, (now - x.t0) / avg); });
+    var frac = n ? Math.min(1, (fin + partial) / n) : 0;
+    $('batchFill').style.width = Math.round(frac * 100) + '%'; $('bmeter').setAttribute('aria-valuenow', Math.round(frac * 100));
+    if (pend) {
+      $('batchTitle').textContent = 'Cutting out ' + n + ' photos';
+      var rate = fin > 0 && batchT0 ? (now - batchT0) / fin : avg / Math.max(1, pool.length || 1);
+      $('batchSub').textContent = (fin + ' of ' + n + ' done') + (fin > 0 ? ' · ' + fmtEta(rate * pend) + ' left' : ' · warming up') + '. Keep this tab open.';
+      if (now - lineTick > 3200) { lineTick = now; lineIdx = (lineIdx + 1) % LINES.length; }
+      $('batchLine').textContent = LINES[lineIdx];
+    } else {
+      $('batchTitle').textContent = done + ' cutout' + (done === 1 ? '' : 's') + ' ready';
+      $('batchSub').textContent = 'Download them all as one zip, or open any photo to touch it up.';
+      $('batchLine').textContent = '';
+    }
+    $('batchZip').disabled = done < 2; $('batchZip').textContent = done >= 2 ? 'Download all ' + done + ' as .zip' : 'Download all as .zip';
+    // tiles, keyed so animations are not restarted
+    var grid = $('batchGrid'), seen = {};
+    items.forEach(function (it) {
+      seen[it.id] = 1; var t = tiles[it.id];
+      if (!t) {
+        t = tiles[it.id] = document.createElement('div'); t.className = 'btile'; t.tabIndex = 0; t.setAttribute('role', 'button');
+        t.innerHTML = '<div class="bimg"></div><div class="bscan"></div><div class="bfoot"><i></i><b></b></div><button class="bx" type="button" aria-label="Remove">×</button>';
+        t.onclick = function () { select(it); setView('editor'); };
+        t.onkeydown = function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); select(it); setView('editor'); } };
+        t.querySelector('.bx').onclick = function (e) { e.stopPropagation(); removeItem(it); };
+        grid.appendChild(t);
+      }
+      if (t.dataset.st !== it.status) { if (it.status === 'done') { t.classList.add('fresh'); setTimeout(function () { t.classList.remove('fresh'); }, 600); } t.dataset.st = it.status; t.querySelector('.bfoot b').textContent = it.name + ' · ' + label(it.status); }
+      var img = t.querySelector('.bimg'), src = null;
+      if (it.status === 'done') { if (!it.thumb) it.thumb = compose(it, 160).toDataURL(); src = it.thumb; }
+      else if (it.small) { if (!it.thumbO) { var c = newCanvas(Math.max(1, Math.round(it.w * 160 / Math.max(it.w, it.h))), Math.max(1, Math.round(it.h * 160 / Math.max(it.w, it.h)))); ctx2d(c).drawImage(it.small, 0, 0, c.width, c.height); it.thumbO = c.toDataURL(); } src = it.thumbO; }
+      if (src && t._src !== src) { img.style.backgroundImage = 'url(' + src + ')'; t._src = src; }
+    });
+    Object.keys(tiles).forEach(function (id) { if (!seen[id]) { tiles[id].remove(); delete tiles[id]; } });
+    clearInterval(batchTimer); if (pend) batchTimer = setInterval(updateBatch, 700);
+  }
+  $('backBatch').onclick = function () { setView('batch'); };
+  $('batchAdd').onclick = function () { $('fileInput').click(); };
+  $('batchZip').onclick = function () { $('saveAll').onclick(); };
+  window.addEventListener('beforeunload', function (e) { if (pendingCount() > 0) { e.preventDefault(); e.returnValue = ''; } });
 
   /* ---------- Cutout methods. All of them feed 1024x1024 frames to the same model. ---------- */
   function newCanvas(w, h) { var c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
@@ -366,7 +473,8 @@
     if (!ctx) throw new Error('This browser cannot make an image that large.');
     ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
     var dx = -b.x * s, dy = -b.y * s, dw = it.w * s, dh = it.h * s;
-    ctx.drawImage(it.img, dx, dy, dw, dh);
+    var srcImg = (!it.img || (maxDim && maxDim <= 320)) && it.small ? it.small : it.img;
+    ctx.drawImage(srcImg, dx, dy, dw, dh);
     if (opts.refine && it.matte) ctx.drawImage(fgCanvas(it.matte), dx, dy, dw, dh);
     ctx.globalCompositeOperation = 'destination-in';
     if (it.strokes.length) {
@@ -414,6 +522,7 @@
       piece.className = 'piece ' + (opts.backdrop === 'checker' ? 'checker' : 'onmat') + (opts.tool !== 'none' ? ' painting' : '');
       $('compare').hidden = true;
     }
+    if (it.status === 'done' && !it.img) { drawOriginal(view, it); viewBox = null; loadImg(it).then(function () { if (current === it) render(); }, function () { toast('Could not reopen that photo.'); }); return; }
     if (it.status === 'error') { busy(false); drawOriginal(view, it); $('outSize').textContent = 'Could not cut this one. ' + (it.error || ''); drawRuler(it.w); viewBox = null; return; }
     if (it.status !== 'done') {
       drawOriginal(view, it); viewBox = null;
@@ -441,10 +550,10 @@
     drawRuler(b.w);
   }
   function drawOriginal(view, it) {
-    if (!it.img) return;
+    var src = it.img || it.small; if (!src) return;
     var s = Math.min(1, 1600 / Math.max(it.w, it.h));
     view.width = Math.round(it.w * s); view.height = Math.round(it.h * s);
-    var ctx = view.getContext('2d'); ctx.globalAlpha = it.status === 'done' ? 1 : .55; ctx.drawImage(it.img, 0, 0, view.width, view.height); ctx.globalAlpha = 1;
+    var ctx = view.getContext('2d'); ctx.globalAlpha = it.status === 'done' ? 1 : .55; ctx.drawImage(src, 0, 0, view.width, view.height); ctx.globalAlpha = 1;
   }
   function setOutSize(it, b) {
     $('outSize').textContent = (b && opts.trim) ? 'Trimmed from your full-size original. Nothing is scaled down.' : 'Same pixels as your original. Nothing is scaled down.';
@@ -471,7 +580,7 @@
       b.setAttribute('aria-label', it.name + ', ' + label(it.status));
       var th = document.createElement('div'); th.className = 'thumb';
       if (it.status === 'done') { if (!it.thumb) it.thumb = compose(it, 160).toDataURL(); th.style.backgroundImage = 'url(' + it.thumb + ')'; }
-      else if (it.img) { if (!it.thumbO) { var c = document.createElement('canvas'), s = 160 / Math.max(it.w, it.h); c.width = it.w * s; c.height = it.h * s; c.getContext('2d').drawImage(it.img, 0, 0, c.width, c.height); it.thumbO = c.toDataURL('image/jpeg', .7); } th.style.backgroundImage = 'url(' + it.thumbO + ')'; th.style.opacity = .6; }
+      else if (it.small) { if (!it.thumbO) { var c = document.createElement('canvas'), s = 160 / Math.max(it.w, it.h); c.width = it.w * s; c.height = it.h * s; c.getContext('2d').drawImage(it.small, 0, 0, c.width, c.height); it.thumbO = c.toDataURL('image/jpeg', .7); } th.style.backgroundImage = 'url(' + it.thumbO + ')'; th.style.opacity = .6; }
       var st = document.createElement('span'); st.className = 'st'; st.textContent = label(it.status);
       var x = document.createElement('button'); x.className = 'x'; x.type = 'button'; x.textContent = '×'; x.setAttribute('aria-label', 'Remove ' + it.name);
       x.onclick = function (e) { e.stopPropagation(); removeItem(it); };
@@ -480,6 +589,7 @@
       b.append(th, st, x); tray.appendChild(b);
     });
     var done = items.filter(function (i) { return i.status === 'done'; }).length;
+    updateBatch();
     $('trayCount').textContent = items.length ? (done + ' of ' + items.length + ' cut') : '0 images';
     updateButtons();
   }
@@ -490,8 +600,9 @@
     if (current === it) {
       current = items[items.length - 1] || null;
       if (current) render();
-      else { $('piece').hidden = true; $('exampleView').hidden = false; $('fileName').textContent = 'example · astronaut.jpg'; $('dims').textContent = '512 × 512 px'; $('compare').hidden = true; setTool('none'); viewBox = null; }
+      else { $('piece').hidden = true; $('exampleView').hidden = false; $('fileName').textContent = 'example'; $('dims').textContent = '512 × 512 px'; $('compare').hidden = true; setTool('none'); viewBox = null; }
     }
+    if (view === 'batch' && !items.length) setView('editor');
     renderTray(); updateButtons();
   }
   function updateButtons() {
@@ -503,6 +614,8 @@
     $('copyOne').disabled = !ok; $('copyOneM').disabled = !ok;
     $('actionbar').hidden = !ok;
     document.body.classList.toggle('working', items.length > 0);
+    var nd = items.filter(function (i) { return i.status === 'done'; }).length;
+    $('saveAll').disabled = nd < 2; $('saveAll').textContent = nd >= 2 ? 'Download all ' + nd + ' as .zip' : 'Download all as .zip';
     document.querySelectorAll('.method').forEach(function (b) { b.disabled = !ok; b.setAttribute('aria-pressed', ok && it.method === b.dataset.method ? 'true' : 'false'); b.classList.toggle('has', !!(ok && it.masks[b.dataset.method])); });
     document.querySelectorAll('input[name="tool"]').forEach(function (r) { r.disabled = !ok; });
     $('brush').disabled = !ok || opts.tool === 'none';
@@ -588,7 +701,7 @@
   function ext() { return opts.fmt === 'webp' ? 'webp' : 'png'; }
   async function saveOne() {
     var it = current; if (!it || it.status !== 'done') return;
-    try { var b = cropBox(it); busy(true, 'Rendering at full size', fmtPx(Math.round(b.w), Math.round(b.h)), null); var blob = await toBlob(compose(it)); busy(false); await saveBlob(blob, baseName(it.name) + '-cutout.' + ext()); }
+    try { await loadImg(it); var b = cropBox(it); busy(true, 'Rendering at full size', fmtPx(Math.round(b.w), Math.round(b.h)), null); var blob = await toBlob(compose(it)); busy(false); await saveBlob(blob, baseName(it.name) + '-cutout.' + ext()); }
     catch (e) { busy(false); toast(e.message || 'Export failed.'); }
   }
   async function copyOne() {
@@ -602,6 +715,28 @@
   }
   $('saveOne').onclick = saveOne; $('saveOneM').onclick = saveOne;
   $('copyOne').onclick = copyOne; $('copyOneM').onclick = copyOne;
+
+  $('saveAll').onclick = async function () {
+    var done = items.filter(function (i) { return i.status === 'done'; });
+    if (!window.JSZip) { toast('The zip tool did not load. Reload the page and try again.'); return; }
+    try {
+      var zip = new JSZip(), used = {};
+      for (var i = 0; i < done.length; i++) {
+        var it = done[i];
+        busy(true, 'Rendering ' + (i + 1) + ' of ' + done.length, it.name + ' · full size', i / done.length);
+        await new Promise(function (r) { setTimeout(r, 20); });
+        await loadImg(it);
+        var c = compose(it), blob = await toBlob(c);
+        c.width = c.height = 1;
+        var n = baseName(it.name), k = n, q = 2; while (used[k]) k = n + '-' + q++; used[k] = 1;
+        zip.file(k + '-cutout.' + ext(), blob);
+        if (it !== current) releaseImg(it);
+      }
+      busy(true, 'Packing the zip', done.length + ' images', 1);
+      var out = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
+      busy(false); await saveBlob(out, 'background-killer-' + done.length + '-cutouts.zip');
+    } catch (e) { busy(false); console.error(e); toast(e.message || 'Export failed.'); }
+  };
 
   /* ---------- Controls ---------- */
   document.querySelectorAll('input[name="backdrop"]').forEach(function (r) { r.onchange = function () { opts.backdrop = r.value; render(); }; });
