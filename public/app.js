@@ -7,7 +7,8 @@
   var $ = function (id) { return document.getElementById(id); };
 
   var items = [], current = null, nextId = 1, viewBox = null;
-  var opts = { backdrop: 'mat', bg: 'none', edge: 45, trim: true, pad: 2, fmt: 'png', tool: 'none', brush: 40 };
+  var WORK = 1800;
+  var opts = { backdrop: 'mat', refine: true, bg: 'none', edge: 45, trim: true, pad: 2, fmt: 'png', tool: 'none', brush: 40 };
   var downloadsP = (window.claude && window.claude.use) ? window.claude.use('downloads').catch(function () { return null; }) : Promise.resolve(null);
 
   /* ---------- UI helpers ---------- */
@@ -131,7 +132,7 @@
     if (!files.length) { toast('Those files are not images this browser can read.'); return; }
     document.body.classList.add('working'); window.scrollTo(0, 0);
     for (var i = 0; i < files.length; i++) {
-      var f = files[i], it = { id: nextId++, name: f.name || ('pasted-' + Date.now() + '.png'), file: f, status: 'queued', strokes: [], redo: [], masks: {}, method: 'standard', rerun: null };
+      var f = files[i], it = { id: nextId++, name: f.name || ('pasted-' + Date.now() + '.png'), file: f, status: 'queued', strokes: [], redo: [], masks: {}, mattes: {}, matte: null, method: 'standard', rerun: null };
       try { it.img = await decode(f); it.w = it.img.width; it.h = it.img.height; }
       catch (e) { it.status = 'error'; it.error = 'This browser cannot open that file.'; }
       items.push(it);
@@ -171,13 +172,15 @@
         try {
           var mask = await cutWith(engine, it, method);
           it.masks[method] = mask;
-          if (first || it.method === method || it.rerun === method) { it.method = method; it.mask = mask; }
+          await new Promise(function (r) { setTimeout(r, 0); });
+          it.mattes[method] = buildMatte(it, mask);
+          if (first || it.method === method || it.rerun === method) { it.method = method; it.mask = mask; it.matte = it.mattes[method]; }
           if (first) it.status = 'done';
           it.thumb = null; it._mc = null; it._bb = undefined;
         } catch (err) {
           console.error(err);
           if (first) { it.status = 'error'; it.error = err.message; }
-          else { toast('That way did not work: ' + err.message); it.method = Object.keys(it.masks).indexOf(it.method) >= 0 ? it.method : 'standard'; it.mask = it.masks[it.method]; }
+          else { toast('That way did not work: ' + err.message); it.method = Object.keys(it.masks).indexOf(it.method) >= 0 ? it.method : 'standard'; it.mask = it.masks[it.method]; it.matte = it.mattes[it.method] || null; }
         }
         if (!first) { it.running = null; if (it.rerun === method) it.rerun = null; }
         if (current === it) { busy(false); render(); }
@@ -256,10 +259,28 @@
     }
     throw new Error('Unknown method');
   }
+  /* Snap the model's mask to the photo's real edges and clean the colors at the rim (see matte.js). */
+  function buildMatte(it, mask) {
+    if (!window.BKMatte) return null;
+    try {
+      var s = Math.min(1, WORK / Math.max(it.w, it.h)), W = Math.max(1, Math.round(it.w * s)), H = Math.max(1, Math.round(it.h * s));
+      var c = newCanvas(W, H), x = ctx2d(c); x.drawImage(it.img, 0, 0, W, H);
+      var rgba = x.getImageData(0, 0, W, H).data;
+      var mc = newCanvas(W, H), mx = ctx2d(mc); mx.drawImage(maskToCanvas(mask), 0, 0, W, H);
+      var md = mx.getImageData(0, 0, W, H).data, p = new Float32Array(W * H);
+      for (var i = 0, j = 0; i < p.length; i++, j += 4) p[i] = md[j] / 255;
+      return BKMatte.refine(rgba, p, W, H);
+    } catch (e) { console.warn('Edge refinement skipped:', e); return null; }
+  }
+  function fgCanvas(m) {
+    if (m._fgc) return m._fgc;
+    var c = newCanvas(m.w, m.h); c.getContext('2d').putImageData(new ImageData(m.fg, m.w, m.h), 0, 0);
+    return (m._fgc = c);
+  }
   function setMethod(method) {
     var it = current; if (!it || it.status !== 'done') return;
     if (it.masks[method]) {
-      it.method = method; it.mask = it.masks[method]; it.rerun = null; it.thumb = null; it._mc = null; it._bb = undefined;
+      it.method = method; it.mask = it.masks[method]; it.matte = it.mattes[method] || null; it.rerun = null; it.thumb = null; it._mc = null; it._bb = undefined;
       render(); renderTray(); return;
     }
     it.rerun = method; render(); processQueue();
@@ -274,8 +295,15 @@
     return t;
   }
   function maskCanvas(it) {
-    var key = opts.edge;
+    var key = opts.edge + (opts.refine && it.matte ? 'r' : 'p');
     if (it._mc && it._mcKey === key) return it._mc;
+    if (opts.refine && it.matte) {
+      var m2 = it.matte, k = 1 + (opts.edge / 100) * 3.2, t2 = new Uint8ClampedArray(256);
+      for (var q = 0; q < 256; q++) { var v2 = (q / 255 - 0.5) * k + 0.5; t2[q] = Math.max(0, Math.min(1, v2)) * 255; }
+      var c2 = newCanvas(m2.w, m2.h), x2 = c2.getContext('2d'), id2 = x2.createImageData(m2.w, m2.h), d2 = id2.data;
+      for (var i2 = 0, j2 = 3; i2 < m2.alpha.length; i2++, j2 += 4) d2[j2] = t2[m2.alpha[i2]];
+      x2.putImageData(id2, 0, 0); it._mc = c2; it._mcKey = key; return c2;
+    }
     var t = lut(), c = document.createElement('canvas'); c.width = SIZE; c.height = SIZE;
     var ctx = c.getContext('2d'), id = ctx.createImageData(SIZE, SIZE), d = id.data, m = it.mask;
     for (var i = 0, j = 3; i < m.length; i++, j += 4) d[j] = t[m[i]];
@@ -339,6 +367,7 @@
     ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
     var dx = -b.x * s, dy = -b.y * s, dw = it.w * s, dh = it.h * s;
     ctx.drawImage(it.img, dx, dy, dw, dh);
+    if (opts.refine && it.matte) ctx.drawImage(fgCanvas(it.matte), dx, dy, dw, dh);
     ctx.globalCompositeOperation = 'destination-in';
     if (it.strokes.length) {
       var a = document.createElement('canvas'); a.width = c.width; a.height = c.height;
@@ -590,6 +619,7 @@
     opts.edge = +this.value; $('edgeOut').textContent = opts.edge < 25 ? 'Soft' : opts.edge > 70 ? 'Crisp' : 'Natural';
     clearTimeout(edgeTimer); edgeTimer = setTimeout(function () { items.forEach(function (i) { i.thumb = null; }); render(); renderTray(); }, 60);
   };
+  $('refine').onchange = function () { opts.refine = this.checked; items.forEach(function (i) { i.thumb = null; i._mc = null; }); render(); renderTray(); };
   $('trim').onchange = function () { opts.trim = this.checked; $('pad').disabled = !this.checked; items.forEach(function (i) { i.thumb = null; }); render(); renderTray(); };
   $('pad').oninput = function () { opts.pad = +this.value; $('padOut').textContent = opts.pad + '%'; render(); };
   $('reveal').oninput = function () { setReveal(+this.value); };

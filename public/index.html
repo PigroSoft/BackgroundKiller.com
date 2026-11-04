@@ -159,6 +159,7 @@
             </div>
           </div>
           <div class="field">
+            <label class="check"><input type="checkbox" id="refine" checked> Refine and clean edges</label>
             <span class="label">Edges <output id="edgeOut">Natural</output></span>
             <input type="range" id="edge" min="0" max="100" value="45" aria-label="Edge softness">
           </div>
@@ -233,6 +234,7 @@
 <noscript><p style="padding:16px;text-align:center">Background Killer needs JavaScript to cut out images in your browser.</p></noscript>
 
 <script>if(/Mac|iPhone|iPad/.test(navigator.platform||navigator.userAgent)){document.querySelectorAll(".pastekey").forEach(function(k){k.textContent="\u2318V"})}</script>
+<script src="matte.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
