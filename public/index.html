@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Free background remover | Background Killer</title>
+<meta name="description" content="Remove the background from any photo for free and download it at full size. It runs in your browser, so your photo never leaves your device.">
+<meta name="theme-color" content="#101112">
+<link rel="canonical" href="https://backgroundkiller.com/">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:title" content="The background had it coming.">
+<meta property="og:description" content="Free background remover. Full-size downloads, and your photo stays on your device.">
+<meta property="og:url" content="https://backgroundkiller.com/">
+<meta property="og:image" content="https://backgroundkiller.com/og.jpg">
+<meta property="og:image:alt" content="A black cat in a trenchcoat and fedora in a rainy alley, next to the words The background had it coming.">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preload" href="fonts/anton-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/noir-open.webp" as="image" type="image/webp">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="top">
+<div class="noir-backdrop" aria-hidden="true"><img class="noir-scene" src="assets/noir-open.webp" alt="" width="1672" height="941" fetchpriority="high"></div>
+
+<header class="site-header">
+  <a class="logo" href="/" aria-label="Background Killer home">
+    <img class="brand-logo" src="assets/avatar.webp" alt="" width="52" height="52">
+    <span class="wordmark">Background<b>Killer</b><small>.com</small></span>
+  </a>
+  <nav aria-label="Main"><a href="#faq">Questions</a></nav>
+</header>
+
+  <section class="hero" aria-labelledby="headline">
+    <div class="hero-copy">
+      <p class="eyebrow">Free image background remover</p>
+      <h1 id="headline"><span>The background</span><span>had it coming.</span></h1>
+      <span class="scratches" aria-hidden="true"><i></i><i></i><i></i></span>
+      <p class="lede">Cut the background out of any photo for free. Your photo stays on your device, and the download keeps its full size.</p>
+      <div class="hero-art"><img class="hero-cat" src="assets/claw.webp" width="702" height="1080" alt="Claw, a black cat in a trenchcoat and low fedora, raising one paw."></div>
+    </div>
+    <div class="upload-column">
+      <div class="upload-card" id="dropCard">
+        <button class="btn btn-primary btn-lg" id="pickBtn" type="button">Upload image</button>
+        <p class="drop">or drop an image here</p>
+        <small>JPG, PNG or WebP. You can also paste.</small>
+        <small class="free">Free, with no sign-up.</small>
+      </div>
+      <div class="sample-row samples" role="group" aria-label="Sample photos">
+        <span>No photo handy?</span>
+        <button class="sample" type="button" data-src="sample/astronaut.jpg" data-name="astronaut.jpg" aria-label="Try the astronaut photo"><img src="sample/thumb-astronaut.jpg" alt="" width="44" height="44"></button>
+        <button class="sample" type="button" data-src="sample/coffee.jpg" data-name="coffee.jpg" aria-label="Try the coffee cup photo"><img src="sample/thumb-coffee.jpg" alt="" width="44" height="44"></button>
+        <button class="sample" type="button" data-src="sample/cat.jpg" data-name="cat.jpg" aria-label="Try the cat photo"><img src="sample/thumb-cat.jpg" alt="" width="44" height="44"></button>
+        <button class="sample" type="button" data-src="sample/rocket.jpg" data-name="rocket.jpg" aria-label="Try the rocket photo"><img src="sample/thumb-rocket.jpg" alt="" width="44" height="44"></button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<main>
+  <section class="workspace" aria-label="Editor">
+    <div class="ad ad-leader" aria-label="Advertisement"><span>Advertisement</span></div>
+    <div class="app">
+      <div class="mat" id="mat">
+        <div class="mat-bar">
+          <span class="file" id="fileName"></span>
+          <span class="engine" id="engineChip" hidden><span class="bar"><b id="engineBar"></b></span><span id="engineText">Loading engine</span></span>
+          <span class="dims" id="dims"></span>
+        </div>
+        <div class="stage" id="stage">
+          <div id="exampleView" hidden></div>
+          <div class="piece onmat" id="piece" hidden>
+            <div class="ruler" id="ruler" aria-hidden="true"></div>
+            <canvas id="view" aria-label="Cutout preview"></canvas>
+            <canvas id="orig" class="orig" aria-hidden="true"></canvas>
+            <div class="divider" id="divider" aria-hidden="true" hidden></div>
+            <div class="brush-ring" id="ring" aria-hidden="true" hidden></div>
+          </div>
+          <div class="compare" id="compare" hidden>
+            <span>Cutout</span>
+            <input type="range" id="reveal" min="0" max="100" value="0" aria-label="Drag to compare with the original photo">
+            <span>Original</span>
+          </div>
+          <div class="busy" id="busy" hidden role="status">
+            <div class="busy-card">
+              <span id="busyText">Getting ready…</span>
+              <div class="meter" id="meter"><i id="meterFill"></i></div>
+              <span class="hint" id="busySub"></span>
+            </div>
+          </div>
+        </div>
+        <div class="mat-foot">
+          <button class="btn btn-primary" id="pickBtn2" type="button">Add images</button>
+          <div class="samples" role="group" aria-label="Sample photos">
+            <span class="hint">Or try one:</span>
+            <button class="sample" type="button" data-src="sample/astronaut.jpg" data-name="astronaut.jpg" aria-label="Try the astronaut photo"><img src="sample/thumb-astronaut.jpg" alt="" width="44" height="44"></button>
+            <button class="sample" type="button" data-src="sample/coffee.jpg" data-name="coffee.jpg" aria-label="Try the coffee cup photo"><img src="sample/thumb-coffee.jpg" alt="" width="44" height="44"></button>
+            <button class="sample" type="button" data-src="sample/rocket.jpg" data-name="rocket.jpg" aria-label="Try the rocket photo"><img src="sample/thumb-rocket.jpg" alt="" width="44" height="44"></button>
+          </div>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" multiple class="sr">
+      </div>
+
+      <aside class="rail">
+        <div class="panel" id="fixPanel">
+          <h2>Fix edges</h2>
+          <div class="field">
+            <div class="seg" style="--n:3" role="radiogroup" aria-label="Brush">
+              <input type="radio" name="tool" id="toolOff" value="none" checked disabled><label for="toolOff">Off</label>
+              <input type="radio" name="tool" id="toolErase" value="erase" disabled><label for="toolErase">Erase</label>
+              <input type="radio" name="tool" id="toolRestore" value="restore" disabled><label for="toolRestore">Restore</label>
+            </div>
+          </div>
+          <div class="field">
+            <span class="label">Brush size <output id="brushOut">40 px</output></span>
+            <input type="range" id="brush" min="6" max="160" value="40" aria-label="Brush size" disabled>
+          </div>
+          <div class="row3">
+            <button class="btn btn-ghost" id="undoBtn" type="button" disabled>Undo</button>
+            <button class="btn btn-ghost" id="redoBtn" type="button" disabled>Redo</button>
+            <button class="btn btn-ghost" id="resetBtn" type="button" disabled>Reset</button>
+          </div>
+          <p class="fix-hint" id="fixHint">Available once a cutout is ready.</p>
+        </div>
+        <div class="panel">
+          <h2>Output</h2>
+          <div class="field">
+            <span class="label">Preview on</span>
+            <div class="seg" style="--n:2" role="radiogroup" aria-label="Preview backdrop">
+              <input type="radio" name="backdrop" id="bdMat" value="mat" checked><label for="bdMat">Dark</label>
+              <input type="radio" name="backdrop" id="bdChecker" value="checker"><label for="bdChecker">Checkerboard</label>
+            </div>
+          </div>
+          <div class="field">
+            <span class="label">Background</span>
+            <div class="swatches" role="group" aria-label="Background fill">
+              <button class="sw sw-none" type="button" data-bg="none" aria-pressed="true" title="Transparent"><span class="sr">Transparent</span></button>
+              <button class="sw" type="button" data-bg="#ffffff" style="background:#ffffff" aria-pressed="false" title="White"><span class="sr">White</span></button>
+              <button class="sw" type="button" data-bg="#000000" style="background:#000000" aria-pressed="false" title="Black"><span class="sr">Black</span></button>
+              <button class="sw" type="button" data-bg="#e94435" style="background:#e94435" aria-pressed="false" title="Red"><span class="sr">Red</span></button>
+              <label class="sw sw-color" title="Pick a color" id="customSw" aria-pressed="false"><span class="sr">Custom color</span><input type="color" id="bgColor" value="#e85d75"></label>
+            </div>
+          </div>
+          <div class="field">
+            <span class="label">Edges <output id="edgeOut">Natural</output></span>
+            <input type="range" id="edge" min="0" max="100" value="45" aria-label="Edge softness">
+          </div>
+          <div class="field">
+            <label class="check"><input type="checkbox" id="trim" checked> Trim to the subject</label>
+            <span class="label">Margin <output id="padOut">2%</output></span>
+            <input type="range" id="pad" min="0" max="20" value="2" aria-label="Margin around the subject">
+          </div>
+          <div class="field">
+            <span class="label">Format</span>
+            <div class="seg" style="--n:2" role="radiogroup" aria-label="File format">
+              <input type="radio" name="fmt" id="fmtPng" value="png" checked><label for="fmtPng">PNG</label>
+              <input type="radio" name="fmt" id="fmtWebp" value="webp"><label for="fmtWebp">WebP</label>
+            </div>
+          </div>
+          <div class="outsize" id="outSize">Same pixels as your original. Nothing is scaled down.</div>
+          <div class="export">
+            <button class="btn btn-primary btn-block btn-stack" id="saveOne" type="button" disabled>Download full size</button>
+            <button class="btn btn-ghost btn-block" id="copyOne" type="button" disabled>Copy image</button>
+            <button class="btn btn-ghost btn-block" id="saveAll" type="button" disabled>Download all as .zip</button>
+          </div>
+        </div>
+        <div class="ad ad-rect" aria-label="Advertisement"><span>Advertisement</span></div>
+      </aside>
+    </div>
+
+    <div class="tray-wrap">
+      <div class="tray-head"><h2>Your images</h2><span id="trayCount">0 images</span></div>
+      <div class="tray" id="tray"></div>
+    </div>
+  </section>
+
+  <section class="info" id="faq" aria-labelledby="faq-title">
+    <div class="info-inner">
+      <div>
+        <h2 id="faq-title">Questions</h2>
+        <p>Your computer does the cutting, so there is no server bill to pass on. A few ads on the page will cover the domain.</p>
+      </div>
+      <div class="faq-list">
+        <details><summary>Is it really free?</summary><p>Yes. There are no credits, accounts or watermarks. Ads may appear on the page to pay for the domain.</p></details>
+        <details><summary>Do you upload my photo?</summary><p>No. The cutout model runs in your browser, on your own computer, and your photo is not sent to us or anyone else. The model is about 46 MB, so it downloads the first time you visit and is saved for next time.</p></details>
+        <details><summary>How big can the download be?</summary><p>It matches your original photo, pixel for pixel. Nothing is scaled down. Very large photos use a lot of memory, so on an older phone a huge image may fail. If that happens, try a smaller version.</p></details>
+        <details><summary>Which files work?</summary><p>JPG, PNG and WebP. HEIC photos work in browsers that can open them, such as Safari. Downloads are PNG or WebP, and both keep transparency.</p></details>
+        <details><summary>What if it misses a spot?</summary><p>Open Fix edges, choose Erase to brush away leftovers, or Restore to bring back anything it cut by mistake. Undo is right there.</p></details>
+        <details><summary>What are the checkerboard squares?</summary><p>They show transparent areas in the preview. They are not part of the file you download.</p></details>
+        <details><summary>Can I do a lot of photos at once?</summary><p>Yes. Add as many as you like, then download them one by one or all together as a zip.</p></details>
+        <details><summary>Who is the cat?</summary><p>That is Claw. He handles the backgrounds.</p></details>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <a class="wordmark" href="/" aria-label="Background Killer home">Background<b>Killer</b><small>.com</small></a>
+  <p>The background had it coming.</p>
+  <nav aria-label="Footer"><a href="privacy.html">Privacy</a></nav>
+  <p class="credits">Cutout model: ISNet general-use by Xuebin Qin and colleagues, Apache-2.0. Runtime: ONNX Runtime Web, MIT. Sample photos from the scikit-image test set, public domain or CC0.</p>
+</footer>
+
+<div class="actionbar" id="actionbar" hidden>
+  <button class="btn btn-primary btn-stack" id="saveOneM" type="button" disabled>Download</button>
+  <button class="btn btn-ghost" id="copyOneM" type="button" disabled>Copy image</button>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+<noscript><p style="padding:16px;text-align:center">Background Killer needs JavaScript to cut out images in your browser.</p></noscript>
+
+<script src="jszip.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
