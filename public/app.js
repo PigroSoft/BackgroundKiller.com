@@ -248,6 +248,9 @@
   function fmtEta(ms) { var s = Math.max(5, Math.round(ms / 1000)); if (s < 60) return 'under a minute'; var m = Math.round(s / 60); return 'about ' + m + (m === 1 ? ' minute' : ' minutes'); }
   function updateBatch() {
     var n = items.length, pend = pendingCount();
+    if (wasPending && !pend) batchFinished(items.filter(function (x) { return x.status === 'done'; }).length);
+    wasPending = pend > 0;
+    if (exporting) return;
     $('backBatch').hidden = !(view === 'editor' && n >= 3);
     document.title = pend ? '(' + (n - pend) + '/' + n + ') Cutting out… · Background Killer' : (n >= 3 && view === 'batch' ? 'Done · ' + baseTitle : baseTitle);
     if (view !== 'batch') return;
@@ -291,6 +294,39 @@
     Object.keys(tiles).forEach(function (id) { if (!seen[id]) { tiles[id].remove(); delete tiles[id]; } });
     clearInterval(batchTimer); if (pend) batchTimer = setInterval(updateBatch, 700);
   }
+  var notifyOn = false, wasPending = false;
+  try { notifyOn = localStorage.getItem('bk-notify') === '1' && window.Notification && Notification.permission === 'granted'; } catch (e) {}
+  function syncNotifyBtn() {
+    var b = $('batchNotify'); if (!window.Notification) { b.hidden = true; return; }
+    b.textContent = notifyOn ? '✓ Will notify you' : 'Notify me when done'; b.setAttribute('aria-pressed', notifyOn ? 'true' : 'false');
+  }
+  $('batchNotify').onclick = async function () {
+    if (notifyOn) { notifyOn = false; try { localStorage.setItem('bk-notify', '0'); } catch (e) {} syncNotifyBtn(); return; }
+    var p = Notification.permission; if (p === 'default') { try { p = await Notification.requestPermission(); } catch (e) {} }
+    notifyOn = p === 'granted'; try { localStorage.setItem('bk-notify', notifyOn ? '1' : '0'); } catch (e) {}
+    if (!notifyOn) toast('Notifications are blocked for this site. You can allow them in your browser settings.');
+    syncNotifyBtn();
+  };
+  function chime() {
+    try {
+      var Ctx = window.AudioContext || window.webkitAudioContext, ac = new Ctx(), t = ac.currentTime;
+      [[659.25, 0], [880, 0.14]].forEach(function (n) {
+        var o = ac.createOscillator(), g = ac.createGain(); o.type = 'sine'; o.frequency.value = n[0];
+        g.gain.setValueAtTime(0.0001, t + n[1]); g.gain.exponentialRampToValueAtTime(0.12, t + n[1] + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + n[1] + 0.5);
+        o.connect(g); g.connect(ac.destination); o.start(t + n[1]); o.stop(t + n[1] + 0.55);
+      });
+      setTimeout(function () { try { ac.close(); } catch (e) {} }, 1500);
+    } catch (e) {}
+  }
+  function batchFinished(n) {
+    if (n < 3) return;
+    if (document.hidden) chime();
+    if (notifyOn && window.Notification && Notification.permission === 'granted' && document.hidden) {
+      try { var nt = new Notification('Your cutouts are ready', { body: n + ' backgrounds removed. Come back to download them.', icon: '/apple-touch-icon.png', tag: 'bk-done' }); nt.onclick = function () { window.focus(); nt.close(); }; } catch (e) {}
+    }
+  }
+  syncNotifyBtn();
+  if (!window.showDirectoryPicker) $('batchFolder').hidden = true;
   $('backBatch').onclick = function () { setView('batch'); };
   $('batchAdd').onclick = function () { $('fileInput').click(); };
   $('batchZip').onclick = function () { $('saveAll').onclick(); };
@@ -716,6 +752,34 @@
   $('saveOne').onclick = saveOne; $('saveOneM').onclick = saveOne;
   $('copyOne').onclick = copyOne; $('copyOneM').onclick = copyOne;
 
+  var exporting = false;
+  function expBusy(on, text, sub, frac) {
+    exporting = on;
+    if (view === 'batch') {
+      if (on) { $('batchTitle').textContent = text; $('batchSub').textContent = sub || ''; $('batchFill').style.width = Math.round((frac || 0) * 100) + '%'; $('batchLine').textContent = ''; }
+      else updateBatch();
+    } else busy(on, text, sub, frac);
+  }
+  async function saveFolder() {
+    var done = items.filter(function (i) { return i.status === 'done'; });
+    var dir; try { dir = await window.showDirectoryPicker({ mode: 'readwrite' }); } catch (e) { return; }
+    try {
+      var used = {};
+      for (var i = 0; i < done.length; i++) {
+        var it = done[i];
+        expBusy(true, 'Saving ' + (i + 1) + ' of ' + done.length, it.name + ' · full size', i / done.length);
+        await new Promise(function (r) { setTimeout(r, 20); });
+        await loadImg(it);
+        var c = compose(it), blob = await toBlob(c); c.width = c.height = 1;
+        var n = baseName(it.name), k = n, q = 2; while (used[k]) k = n + '-' + q++; used[k] = 1;
+        var fh = await dir.getFileHandle(k + '-cutout.' + ext(), { create: true }), w = await fh.createWritable();
+        await w.write(blob); await w.close();
+        if (it !== current) releaseImg(it);
+      }
+      expBusy(false); toast('Saved ' + done.length + ' images to ' + dir.name);
+    } catch (e) { expBusy(false); console.error(e); toast('Could not save to that folder: ' + (e.message || e)); }
+  }
+  $('batchFolder').onclick = saveFolder;
   $('saveAll').onclick = async function () {
     var done = items.filter(function (i) { return i.status === 'done'; });
     if (!window.JSZip) { toast('The zip tool did not load. Reload the page and try again.'); return; }
@@ -723,7 +787,7 @@
       var zip = new JSZip(), used = {};
       for (var i = 0; i < done.length; i++) {
         var it = done[i];
-        busy(true, 'Rendering ' + (i + 1) + ' of ' + done.length, it.name + ' · full size', i / done.length);
+        expBusy(true, 'Rendering ' + (i + 1) + ' of ' + done.length, it.name + ' · full size', i / done.length);
         await new Promise(function (r) { setTimeout(r, 20); });
         await loadImg(it);
         var c = compose(it), blob = await toBlob(c);
@@ -732,10 +796,10 @@
         zip.file(k + '-cutout.' + ext(), blob);
         if (it !== current) releaseImg(it);
       }
-      busy(true, 'Packing the zip', done.length + ' images', 1);
+      expBusy(true, 'Packing the zip', done.length + ' images', 1);
       var out = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
-      busy(false); await saveBlob(out, 'background-killer-' + done.length + '-cutouts.zip');
-    } catch (e) { busy(false); console.error(e); toast(e.message || 'Export failed.'); }
+      expBusy(false); await saveBlob(out, 'background-killer-' + done.length + '-cutouts.zip');
+    } catch (e) { expBusy(false); console.error(e); toast(e.message || 'Export failed.'); }
   };
 
   /* ---------- Controls ---------- */
