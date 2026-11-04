@@ -131,17 +131,27 @@
     if (!files.length) { toast('Those files are not images this browser can read.'); return; }
     document.body.classList.add('working'); window.scrollTo(0, 0);
     for (var i = 0; i < files.length; i++) {
-      var f = files[i], it = { id: nextId++, name: f.name || ('pasted-' + Date.now() + '.png'), file: f, status: 'queued', strokes: [], redo: [] };
+      var f = files[i], it = { id: nextId++, name: f.name || ('pasted-' + Date.now() + '.png'), file: f, status: 'queued', strokes: [], redo: [], masks: {}, method: 'standard', rerun: null };
       try { it.img = await decode(f); it.w = it.img.width; it.h = it.img.height; }
       catch (e) { it.status = 'error'; it.error = 'This browser cannot open that file.'; }
       items.push(it);
-      if (!current || (selectNew && i === files.length - 1)) select(it);
+      if (i === files.length - 1 || !current) select(it);
     }
     renderTray();
     processQueue();
   }
 
   var processing = false;
+  /* Newest request first, so the photo on screen is the next one to be cut. A job already running is never interrupted. */
+  function nextJob() {
+    for (var i = items.length - 1; i >= 0; i--) {
+      var it = items[i];
+      if (it.status === 'queued') return { it: it, method: 'standard' };
+      if (it.status === 'done' && it.rerun) return { it: it, method: it.rerun };
+    }
+    return null;
+  }
+  function waitingNote() { return { text: 'Next in line', sub: 'Another photo is being cut out first. This one starts as soon as it finishes.' }; }
   async function processQueue() {
     if (processing) return; processing = true;
     try {
@@ -149,28 +159,112 @@
       try { engine = await startEngine(); }
       catch (err) {
         busy(false); toast('The cutout engine could not load. ' + err.message);
-        items.forEach(function (x) { if (x.status === 'queued') { x.status = 'error'; x.error = 'The cutout engine could not load. Reload the page and try again.'; } });
+        items.forEach(function (x) { if (x.status === 'queued') { x.status = 'error'; x.error = 'The cutout engine could not load. Reload the page and try again.'; } x.rerun = null; });
         renderTray(); render(); processing = false; return;
       }
       for (;;) {
-        var it = items.find(function (x) { return x.status === 'queued'; });
-        if (!it) break;
-        it.status = 'cutting'; renderTray();
-        if (current === it) busy(true, 'Cutting out ' + it.name, 'Usually 5 to 20 seconds per image', null);
+        var job = nextJob(); if (!job) break;
+        var it = job.it, method = job.method, first = it.status === 'queued';
+        if (first) it.status = 'cutting'; else it.running = method;
+        renderTray();
+        if (current === it) render();
         try {
-          var c = document.createElement('canvas'); c.width = SIZE; c.height = SIZE;
-          var x = c.getContext('2d', { willReadFrequently: true });
-          x.drawImage(it.img, 0, 0, SIZE, SIZE);
-          var rgba = x.getImageData(0, 0, SIZE, SIZE).data;
-          it.mask = await engine.run(new Uint8ClampedArray(rgba.buffer));
-          it.status = 'done';
-          it.thumb = null;
-        } catch (err) { it.status = 'error'; it.error = err.message; console.error(err); }
+          var mask = await cutWith(engine, it, method);
+          it.masks[method] = mask;
+          if (first || it.method === method || it.rerun === method) { it.method = method; it.mask = mask; }
+          if (first) it.status = 'done';
+          it.thumb = null; it._mc = null; it._bb = undefined;
+        } catch (err) {
+          console.error(err);
+          if (first) { it.status = 'error'; it.error = err.message; }
+          else { toast('That way did not work: ' + err.message); it.method = Object.keys(it.masks).indexOf(it.method) >= 0 ? it.method : 'standard'; it.mask = it.masks[it.method]; }
+        }
+        if (!first) { it.running = null; if (it.rerun === method) it.rerun = null; }
         if (current === it) { busy(false); render(); }
         renderTray();
       }
-    } finally { processing = false; busy(false); updateButtons(); }
+    } finally { processing = false; busy(false); updateButtons(); if (current) render(); }
   }
+
+  /* ---------- Cutout methods. All of them feed 1024x1024 frames to the same model. ---------- */
+  function newCanvas(w, h) { var c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
+  function ctx2d(c) { var x = c.getContext('2d', { willReadFrequently: true }); x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high'; return x; }
+  async function runFrame(engine, canvas) {
+    var rgba = ctx2d(canvas).getImageData(0, 0, SIZE, SIZE).data;
+    return engine.run(new Uint8ClampedArray(rgba.buffer));
+  }
+  function maskToCanvas(m) {
+    var c = newCanvas(SIZE, SIZE), x = ctx2d(c), id = x.createImageData(SIZE, SIZE), d = id.data;
+    for (var i = 0, j = 0; i < m.length; i++, j += 4) { d[j] = d[j + 1] = d[j + 2] = m[i]; d[j + 3] = 255; }
+    x.putImageData(id, 0, 0); return c;
+  }
+  function canvasToMask(c) {
+    var d = ctx2d(c).getImageData(0, 0, SIZE, SIZE).data, m = new Uint8ClampedArray(SIZE * SIZE);
+    for (var i = 0, j = 0; i < m.length; i++, j += 4) m[i] = d[j];
+    return m;
+  }
+  /* Draw a source rectangle of the photo into a 1024 frame, keeping its proportions on a mid-grey ground. */
+  function letterFrame(img, sx, sy, sw, sh, filter) {
+    var c = newCanvas(SIZE, SIZE), x = ctx2d(c), s = Math.min(SIZE / sw, SIZE / sh), dw = sw * s, dh = sh * s, ox = (SIZE - dw) / 2, oy = (SIZE - dh) / 2;
+    x.fillStyle = '#808080'; x.fillRect(0, 0, SIZE, SIZE);
+    if (filter) x.filter = filter;
+    x.drawImage(img, sx, sy, sw, sh, ox, oy, dw, dh);
+    return { canvas: c, ox: ox, oy: oy, dw: dw, dh: dh };
+  }
+  /* Take the letterboxed result back to a full 1024x1024 mask of the source rectangle. */
+  function unletter(mask, f) {
+    var out = newCanvas(SIZE, SIZE), x = ctx2d(out);
+    x.drawImage(maskToCanvas(mask), f.ox, f.oy, f.dw, f.dh, 0, 0, SIZE, SIZE);
+    return canvasToMask(out);
+  }
+  function flipMask(m) { var o = new Uint8ClampedArray(m.length); for (var y = 0; y < SIZE; y++) for (var x = 0; x < SIZE; x++) o[y * SIZE + x] = m[y * SIZE + (SIZE - 1 - x)]; return o; }
+  async function standardMask(engine, it) {
+    var c = newCanvas(SIZE, SIZE); ctx2d(c).drawImage(it.img, 0, 0, SIZE, SIZE);
+    return runFrame(engine, c);
+  }
+  async function cutWith(engine, it, method) {
+    var w = it.w, h = it.h;
+    if (method === 'standard') return standardMask(engine, it);
+    if (method === 'keep') { var f = letterFrame(it.img, 0, 0, w, h); return unletter(await runFrame(engine, f.canvas), f); }
+    if (method === 'flip') {
+      var a = it.masks.standard || await standardMask(engine, it); it.masks.standard = a;
+      var c = newCanvas(SIZE, SIZE), x = ctx2d(c); x.translate(SIZE, 0); x.scale(-1, 1); x.drawImage(it.img, 0, 0, SIZE, SIZE);
+      var b = flipMask(await runFrame(engine, c)), o = new Uint8ClampedArray(a.length);
+      for (var i = 0; i < o.length; i++) o[i] = (a[i] + b[i]) >> 1;
+      return o;
+    }
+    if (method === 'contrast') {
+      var f2 = letterFrame(it.img, 0, 0, w, h, 'contrast(1.35) saturate(1.1) brightness(1.05)');
+      return unletter(await runFrame(engine, f2.canvas), f2);
+    }
+    if (method === 'zoom') {
+      var base = it.masks.standard || await standardMask(engine, it); it.masks.standard = base;
+      var minX = SIZE, minY = SIZE, maxX = -1, maxY = -1;
+      for (var yy = 0; yy < SIZE; yy++) for (var xx = 0; xx < SIZE; xx++) if (base[yy * SIZE + xx] > 110) { if (xx < minX) minX = xx; if (xx > maxX) maxX = xx; if (yy < minY) minY = yy; if (yy > maxY) maxY = yy; }
+      if (maxX < 0) return base;
+      var m = Math.max(maxX - minX, maxY - minY) * 0.1 + 8;
+      minX = Math.max(0, minX - m); minY = Math.max(0, minY - m); maxX = Math.min(SIZE - 1, maxX + m); maxY = Math.min(SIZE - 1, maxY + m);
+      var sx = minX / SIZE * w, sy = minY / SIZE * h, sw = (maxX - minX + 1) / SIZE * w, sh = (maxY - minY + 1) / SIZE * h;
+      var f3 = letterFrame(it.img, sx, sy, sw, sh), zoomed = await runFrame(engine, f3.canvas);
+      var crop = unletter(zoomed, f3);
+      /* Put the zoomed result back where it came from, and keep the standard mask everywhere else. */
+      var out = newCanvas(SIZE, SIZE), ox = ctx2d(out);
+      ox.drawImage(maskToCanvas(base), 0, 0);
+      ox.fillStyle = '#000'; ox.fillRect(minX, minY, maxX - minX + 1, maxY - minY + 1);
+      ox.drawImage(maskToCanvas(crop), 0, 0, SIZE, SIZE, minX, minY, maxX - minX + 1, maxY - minY + 1);
+      return canvasToMask(out);
+    }
+    throw new Error('Unknown method');
+  }
+  function setMethod(method) {
+    var it = current; if (!it || it.status !== 'done') return;
+    if (it.masks[method]) {
+      it.method = method; it.mask = it.masks[method]; it.rerun = null; it.thumb = null; it._mc = null; it._bb = undefined;
+      render(); renderTray(); return;
+    }
+    it.rerun = method; render(); processQueue();
+  }
+  document.querySelectorAll('.method').forEach(function (b) { b.onclick = function () { setMethod(b.dataset.method); }; });
 
   /* ---------- Compositing ---------- */
   function lut() {
@@ -296,10 +390,12 @@
       drawOriginal(view, it); viewBox = null;
       if (it.status === 'cutting') busy(true, 'Cutting out ' + it.name, 'Usually 5 to 20 seconds per image', null);
       else if (!engineReady) busy(true, lastEngine.text, lastEngine.sub, lastEngine.frac);
+      else if (it.status === 'queued') { var wn = waitingNote(); busy(true, wn.text, wn.sub, null); }
       $('outSize').textContent = 'Same pixels as your original. Nothing is scaled down.';
       drawRuler(it.w); return;
     }
     if (!fast) busy(false);
+    if (!fast && it.rerun) { busy(true, it.running === it.rerun ? 'Trying another way' : 'Next in line', it.running === it.rerun ? 'Cutting this photo again with a different method' : 'Another photo is being cut out first', null); }
     var editing = opts.tool !== 'none';
     var c = compose(it, 1600, { edit: editing, noBg: editing });
     var b = c._box, s = c._s;
@@ -378,9 +474,7 @@
     $('copyOne').disabled = !ok; $('copyOneM').disabled = !ok;
     $('actionbar').hidden = !ok;
     document.body.classList.toggle('working', items.length > 0);
-    var n = items.filter(function (i) { return i.status === 'done'; }).length;
-    $('saveAll').disabled = n < 2;
-    $('saveAll').textContent = n >= 2 ? 'Download all ' + n + ' as .zip' : 'Download all as .zip';
+    document.querySelectorAll('.method').forEach(function (b) { b.disabled = !ok; b.setAttribute('aria-pressed', ok && it.method === b.dataset.method ? 'true' : 'false'); b.classList.toggle('has', !!(ok && it.masks[b.dataset.method])); });
     document.querySelectorAll('input[name="tool"]').forEach(function (r) { r.disabled = !ok; });
     $('brush').disabled = !ok || opts.tool === 'none';
     $('undoBtn').disabled = !ok || !it.strokes.length;
@@ -479,21 +573,6 @@
   }
   $('saveOne').onclick = saveOne; $('saveOneM').onclick = saveOne;
   $('copyOne').onclick = copyOne; $('copyOneM').onclick = copyOne;
-  $('saveAll').onclick = async function () {
-    var done = items.filter(function (i) { return i.status === 'done'; });
-    if (!window.JSZip) { toast('The zip tool did not load. Download pieces one at a time.'); return; }
-    try {
-      var zip = new JSZip(), used = {};
-      for (var i = 0; i < done.length; i++) {
-        busy(true, 'Rendering ' + (i + 1) + ' of ' + done.length, done[i].name, i / done.length);
-        var n = baseName(done[i].name), k = n, c = 2; while (used[k]) k = n + '-' + c++; used[k] = 1;
-        zip.file(k + '-cutout.' + ext(), await toBlob(compose(done[i])));
-      }
-      busy(true, 'Packing the zip', '', 1);
-      var blob = await zip.generateAsync({ type: 'blob', compression: 'STORE' });
-      busy(false); await saveBlob(blob, 'background-killer-' + done.length + '-pieces.zip');
-    } catch (e) { busy(false); toast(e.message || 'Export failed.'); }
-  };
 
   /* ---------- Controls ---------- */
   document.querySelectorAll('input[name="backdrop"]').forEach(function (r) { r.onchange = function () { opts.backdrop = r.value; render(); }; });

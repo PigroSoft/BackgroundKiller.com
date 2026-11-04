@@ -310,3 +310,14 @@ body.working .protip { display: none; }
 @media (max-width: 760px) { .site-footer { gap: 22px; } .footer-col h2 { margin-bottom: 2px; } }
 
 @media (max-width: 1000px) { .hero h1 br.wide { display: none; } }
+
+/* Cutout methods */
+.methods { display: grid; gap: 8px; }
+.method { display: grid; gap: 2px; text-align: left; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line-strong); background: transparent; color: inherit; }
+.method b { font-size: 14px; font-weight: 600; }
+.method span { font-size: 12.5px; color: var(--muted); }
+.method:hover:not(:disabled) { border-color: var(--red); }
+.method[aria-pressed="true"] { background: var(--text); color: var(--ink); border-color: var(--text); }
+.method[aria-pressed="true"] span { color: #444; }
+.method:disabled { opacity: .45; cursor: not-allowed; }
+.method.has:not([aria-pressed="true"]) b::after { content: " ✓"; color: var(--muted); font-weight: 400; }

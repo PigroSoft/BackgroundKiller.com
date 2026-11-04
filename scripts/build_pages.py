@@ -102,7 +102,9 @@ FAQ = [
     ("What are the checkerboard squares?",
      "They show transparent areas in the preview. They are not part of the file you download."),
     ("Can I do a lot of photos at once?",
-     'Yes. Add as many as you like, then download them one by one or all together as a zip. This is handy for <a href="/product-photo-background-remover">product photos</a>.'),
+     'Yes. Drop or paste another photo while one is being cut out and it opens right away, while the first keeps going in the background. Click the little previews at the bottom to jump between them. This is handy for <a href="/product-photo-background-remover">product photos</a>.'),
+    ("What if the cutout is wrong?",
+     "Open Cutout not right? and try another way. There are four: keep proportions, zoom in on the subject, double check, and boost contrast. Each runs the model differently, and you can switch back to the first try at any time. Then tidy anything left with Erase and Restore."),
     ("Who is the cat?",
      "That is Claw. He handles the backgrounds."),
 ]
@@ -142,7 +144,8 @@ page("/remove-bg-alternative",
 <li><strong>Full size is free.</strong> remove.bg's help page says free use covers images up to 0.25 megapixels, with higher resolution on paid plans. Background Killer downloads your cutout at the same pixel size as your original photo.</li>
 <li><strong>No account and no credits.</strong> There is nothing to sign up for and nothing to run out of.</li>
 <li><strong>Your photo stays on your device.</strong> The cutout model runs in your browser, so the image is never uploaded.</li>
-<li><strong>Batches.</strong> Add a stack of photos, then download them one by one or as a single zip.</li>
+<li><strong>Several photos at once.</strong> Drop or paste another photo while one is being cut out, then jump between them with the previews at the bottom.</li>
+<li><strong>Another try when it misses.</strong> If a cutout is off, you can rerun it a different way, for example zoomed in on the subject.</li>
 <li><strong>A brush for edges.</strong> Erase leftovers, or restore parts the model cut by mistake.</li>
 </ul>
 <h2>What to know before you switch</h2>
@@ -230,15 +233,15 @@ page("/product-photo-background-remover",
      "Cut out product photos in bulk and put them on pure white or any color. Free, full-size downloads, and no upload.",
      """
 <h1>Remove backgrounds from product photos</h1>
-<p class="lead">Clean, consistent backgrounds make a shop look tidier, and many marketplaces expect a plain white background on the main photo. Background Killer cuts out a whole batch of product photos and saves them as a zip.</p>
+<p class="lead">Clean, consistent backgrounds make a shop look tidier, and many marketplaces expect a plain white background on the main photo. Background Killer cuts out product photos one after another, and you can keep adding more while it works.</p>
 """ + CTA + """
-<h2>A batch in five steps</h2>
+<h2>Several photos in five steps</h2>
 <ol>
-<li>Add all your photos at once. They are cut out one after another.</li>
-<li>Click each one in the tray to check the result, and fix any edges with Erase and Restore.</li>
+<li>Add your photos. Drop or paste another one at any time, and it opens right away while the others keep cutting.</li>
+<li>Click each preview at the bottom to check the result. If one is off, try Cutout not right?, then fix edges with Erase and Restore.</li>
 <li>Choose the white swatch for a pure white background. Marketplaces such as Amazon ask for pure white on main images, so check the current rules for the one you sell on.</li>
 <li>Keep Trim to the subject switched on and set the same margin for every photo, so the products look consistent.</li>
-<li>Choose PNG or WebP and press Download all as .zip.</li>
+<li>Choose PNG or WebP and press Download full size on each photo.</li>
 </ol>
 <h2>Take photos that cut out well</h2>
 <ul>
@@ -373,7 +376,6 @@ page("/licenses",
 <h2>Software</h2>
 <ul>
 <li><strong>ONNX Runtime Web</strong>, by Microsoft, runs the model in your browser. MIT license. <a href="/licenses/onnxruntime-web-MIT.txt">License text</a>.</li>
-<li><strong>JSZip</strong>, by Stuart Knightley and contributors, builds the zip file. Used under the MIT license. <a href="/licenses/jszip-MIT.txt">License text</a>.</li>
 </ul>
 <h2>Fonts</h2>
 <ul>
