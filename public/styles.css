@@ -363,3 +363,4 @@ body.batch-view.working .workspace { display: none; }
 @keyframes pop { 0% { transform: scale(.94); } 60% { transform: scale(1.03); } 100% { transform: scale(1); } }
 @keyframes pulse { 50% { opacity: .35; } }
 @media (max-width: 760px) { .bgrid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; } .batch-actions { width: 100%; } .batch-actions .btn { flex: 1; } }
+.site-footer .copy .sep { opacity: .5; margin: 0 4px; }

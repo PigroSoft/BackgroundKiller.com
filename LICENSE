@@ -1,0 +1,39 @@
+Background Killer
+Copyright (c) 2026 Jeffrey Humble (Pigrosoft)
+
+What this licence covers: the source code in this repository, meaning the HTML,
+CSS, JavaScript and scripts written for Background Killer.
+
+What it does not cover: the name "Background Killer", the logo, the Claw
+artwork and the other images in public/assets/, the sample photos in
+public/sample/, and the third-party files listed below. All rights in the name,
+logo, artwork and sample photos stay with Pigrosoft. Third-party files keep
+their own licences, which are in public/licenses/.
+
+Third-party files: the ISNet model (Apache-2.0) in public/model/, ONNX Runtime
+Web (MIT) in public/ort/, JSZip (MIT) in public/jszip.min.js, and the fonts
+Anton and Inter (SIL Open Font License 1.1) in public/fonts/.
+
+----------------------------------------------------------------------------
+
+MIT License
+
+Copyright (c) 2026 Jeffrey Humble (Pigrosoft)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

@@ -15,7 +15,7 @@ GUIDES = [
     ("/make-png-transparent", "Make a transparent PNG"),
     ("/product-photo-background-remover", "Product photo backgrounds"),
 ]
-LEGAL = [("/imprint", "Imprint"), ("/privacy", "Privacy"), ("/terms", "Terms"), ("/licenses", "Licenses")]
+LEGAL = [("/about", "About"), ("/imprint", "Imprint"), ("/privacy", "Privacy"), ("/terms", "Terms"), ("/licenses", "Licenses")]
 
 FOOTER = """<footer class="site-footer">
   <div class="footer-brand">
@@ -23,8 +23,9 @@ FOOTER = """<footer class="site-footer">
     <p class="tagline">The background had it coming.</p>
   </div>
   <nav class="footer-col" aria-label="Guides"><h2>Guides</h2>%s</nav>
-  <nav class="footer-col" aria-label="Legal"><h2>Legal</h2>%s</nav>
-  <p class="copy">&copy; 2026 <a href="https://pigrosoft.com/">Pigrosoft</a>, Berlin</p>
+  <nav class="footer-col" aria-label="About and legal"><h2>About and legal</h2>%s</nav>
+  <p class="copy">&copy; 2026 <a href="https://pigrosoft.com/">Pigrosoft</a>, Berlin <span class="sep">&middot;</span> <a id="bkVersion" href="/CHANGELOG.txt">Version</a></p>
+  <script src="/version.js"></script>
 </footer>""" % (
     "".join('<a href="%s">%s</a>' % g for g in GUIDES),
     "".join('<a href="%s">%s</a>' % g for g in LEGAL),
@@ -90,7 +91,7 @@ FAQ = [
     ("Is this a remove.bg alternative?",
      'Yes. remove.bg has announced that its standalone website will close on 1 December 2026. Background Killer does the same basic job, and the free download is full size. <a href="/remove-bg-alternative">Here is how they compare</a>.'),
     ("Do you upload my photo?",
-     "No. The cutout model runs in your browser, on your own computer, so your photo is not sent to us or anyone else. The model is about 46 MB, so it downloads the first time you visit and is saved for next time."),
+     'No. The cutout model runs in your browser, on your own computer, and the page never sends your photo anywhere. The model is about 46 MB, so it downloads the first time you visit and is saved for next time. You can check this yourself: <a href="/privacy#check">here is how</a>.'),
     ("How big can the download be?",
      "It matches your original photo, pixel for pixel. Nothing is scaled down. Very large photos use a lot of memory, so on an older phone a huge image may fail. If that happens, try a smaller version."),
     ("How do I remove the background from a photo?",
@@ -260,6 +261,23 @@ page("/product-photo-background-remover",
      crumb="Product photo backgrounds")
 
 # ---------------------------------------------------------------- legal pages
+
+page("/about",
+     "About Background Killer",
+     "Who makes Background Killer, how it works, and under which licence.",
+     """
+<h1>About</h1>
+<p class="lead">Background Killer is a free tool that removes the background from a photo, on your own computer.</p>
+<h2>Who makes it</h2>
+<p>Background Killer is made by Jeffrey Humble and <a href="https://pigrosoft.com/">Pigrosoft</a>, a small software company in Berlin. To reach us, write to <a href="mailto:support@pigrosoft.com">support@pigrosoft.com</a>. Our postal address and VAT ID are in the <a href="/imprint">imprint</a>.</p>
+<h2>How it works</h2>
+<p>The cutout runs inside your browser. It uses the ISNet model, which is licensed under Apache-2.0, and ONNX Runtime Web, which is licensed under MIT. Your photo does not leave your device. The page says exactly what it downloads in the <a href="/privacy#check">privacy text</a>, with steps to check it in your browser's network tab. The scripts that run on the page are plain JavaScript, so you can read them with your browser's developer tools.</p>
+<h2>Licence</h2>
+<p>The code is released under the MIT licence. Read it in <a href="/LICENSE.txt">LICENSE</a>. The name, logo, Claw artwork and sample photos are not part of that licence. The model, software and fonts we use keep their own licences, which are listed with credits on the <a href="/licenses">licenses page</a>.</p>
+<h2>Version</h2>
+<p>The current version and its date are in the footer of every page. What changed in each version is in the <a href="/CHANGELOG.txt">changelog</a>.</p>
+""", crumb="About")
+
 page("/imprint",
      "Imprint | Background Killer",
      "Legal notice (Impressum) for backgroundkiller.com.",
@@ -295,19 +313,24 @@ page("/privacy",
 <h2>Controller</h2>
 <p>Jeffrey Humble (Pigrosoft), Peschkestr. 5, 12161 Berlin, Germany. Email: <a href="mailto:support@pigrosoft.com">support@pigrosoft.com</a>. See also the <a href="/imprint">imprint</a>.</p>
 <h2>The short version</h2>
-<p>Background Killer removes backgrounds inside your browser. The photos you add are processed on your own device and are not uploaded to us or to anyone else. The site has no accounts, no tracking cookies, no analytics and no advertising at the moment.</p>
+<p>Background Killer removes backgrounds inside your browser. The photos you add are processed on your own device and are not uploaded to us or to anyone else. The site has no accounts, no cookies, no analytics and no advertising at the moment.</p>
 <h2>Your photos</h2>
 <p>When you add an image, your browser reads it and the cutout model runs on your device. The image, the cutout and your edits stay in your browser's memory and are gone when you close or reload the page, unless you download them. We never receive them.</p>
+<h2>What the page downloads</h2>
+<p>The first time you visit, the page downloads the cutout model (about 46 MB) from this site and saves it in your browser's cache. After that it loads from the cache and the page needs no download for it. Besides the model, the page loads its own text, fonts, images and scripts from this site. Every one of these is a plain request for a file. No request carries your photo or anything made from it.</p>
 <h2>Data stored on your device</h2>
-<p>The cutout model (about 46 MB) is saved in your browser's cache so that it only has to download once. This is needed to provide the function you asked for, and it contains no personal information. You can remove it at any time by clearing the site's data in your browser settings. We do not set cookies.</p>
+<p>The model is kept in your browser's cache so it only has to download once. This is needed to provide the function you asked for, and it contains no personal information. If you switch on "Notify me when done", the page also saves that choice in your browser's local storage. You can remove both at any time by clearing the site's data in your browser settings. We do not set cookies.</p>
+<h2 id="check">How to check this yourself</h2>
+<p>Open your browser's developer tools (F12, or Cmd+Option+I on a Mac) and go to the Network tab. Drop in a photo and watch the list. You will see no upload: only GET requests for files from backgroundkiller.com, and once the model has loaded the page makes no more requests. Switch the browser to offline mode once the page has loaded, and the tool keeps working.</p>
 <h2>Hosting and server logs</h2>
-<p>The site is delivered by Cloudflare, Inc. (USA). When you open a page, your browser sends a request that includes your IP address, the time, the page requested and technical details such as your browser type. Cloudflare processes this data to deliver the site and keep it secure, and may keep it in server logs. We do not run our own logs and do not see your photos in these requests. The legal basis is Art. 6(1)(f) GDPR, our interest in a secure and reliable website. Where data is transferred to the United States, this relies on the safeguards described in Cloudflare's data processing terms, such as the EU-US Data Privacy Framework and standard contractual clauses. Cloudflare's own privacy policy applies as well.</p>
+<p>The site is delivered by Cloudflare, Inc. (USA). When you open a page, your browser sends a request that includes your IP address, the time, the page requested and technical details such as your browser type. Cloudflare processes this data to deliver the site and keep it secure, and may keep it in server logs. We do not run our own logs. These requests never contain your photos. The legal basis is Art. 6(1)(f) GDPR, our interest in a secure and reliable website. Where data is transferred to the United States, this relies on the safeguards described in Cloudflare's data processing terms, such as the EU-US Data Privacy Framework and standard contractual clauses. Cloudflare's own privacy policy applies as well.</p>
 <h2>Fonts and other resources</h2>
 <p>Fonts, scripts and images are served from this site itself. Your browser does not contact Google or other third parties to display it.</p>
 <h2>Contacting us</h2>
 <p>If you email us, we use your message and address only to reply and keep them as long as needed for that purpose. The legal basis is Art. 6(1)(f) GDPR, or Art. 6(1)(b) if your message relates to a contract.</p>
 <h2>Advertising</h2>
-<p>The site does not currently show ads. If we add them, we will update this policy first and ask for your consent where the law requires it, before any advertising scripts load.</p>
+<p>No ads load on this site today, and there is no ad, analytics or tracking code on the page. The layout has two empty spots where ads may go later. They are not connected to any ad provider.</p>
+<p>If we add ads, they will pay for the domain, the hosting and the work of keeping the site running, and any extra goes to the maker. We will name the ad provider on this page before any ad code runs, and we will ask for your consent where the law requires it. Ad providers usually see your IP address, your browser and device type, the address of the page and which ads you click, and they may set cookies to match ads to you. We will list what the chosen provider collects here. We will not give an ad provider your photos, and before launch we will check in the network tab that no ad request carries one.</p>
 <h2>Your rights</h2>
 <p>You have the right to access, rectification, erasure, restriction of processing, data portability and objection under the GDPR. You can also lodge a complaint with a supervisory authority, for example the Berlin Commissioner for Data Protection and Freedom of Information (Berliner Beauftragte f&uuml;r Datenschutz und Informationsfreiheit), Alt-Moabit 59-61, 10555 Berlin, Germany.</p>
 
@@ -317,19 +340,24 @@ page("/privacy",
 <h3>Verantwortlicher</h3>
 <p>Jeffrey Humble (Pigrosoft), Peschkestr. 5, 12161 Berlin, Deutschland. E-Mail: <a href="mailto:support@pigrosoft.com">support@pigrosoft.com</a>. Siehe auch das <a href="/imprint#de">Impressum</a>.</p>
 <h3>Kurzfassung</h3>
-<p>Background Killer entfernt Hintergr&uuml;nde direkt in Ihrem Browser. Die Bilder, die Sie hinzuf&uuml;gen, werden auf Ihrem eigenen Ger&auml;t verarbeitet und nicht an uns oder Dritte hochgeladen. Die Website hat derzeit keine Benutzerkonten, keine Tracking-Cookies, keine Analyse und keine Werbung.</p>
+<p>Background Killer entfernt Hintergr&uuml;nde direkt in Ihrem Browser. Die Bilder, die Sie hinzuf&uuml;gen, werden auf Ihrem eigenen Ger&auml;t verarbeitet und nicht an uns oder Dritte hochgeladen. Die Website hat derzeit keine Benutzerkonten, keine Cookies, keine Analyse und keine Werbung.</p>
 <h3>Ihre Fotos</h3>
 <p>Wenn Sie ein Bild hinzuf&uuml;gen, liest Ihr Browser es ein, und das Modell zum Freistellen l&auml;uft auf Ihrem Ger&auml;t. Bild, Freisteller und Ihre Bearbeitungen bleiben im Arbeitsspeicher Ihres Browsers und sind weg, sobald Sie die Seite schlie&szlig;en oder neu laden, sofern Sie sie nicht herunterladen. Wir erhalten sie nie.</p>
+<h3>Was die Seite herunterl&auml;dt</h3>
+<p>Beim ersten Besuch l&auml;dt die Seite das Modell (etwa 46 MB) von dieser Website herunter und speichert es im Cache Ihres Browsers. Danach wird es aus dem Cache geladen. Au&szlig;erdem l&auml;dt die Seite ihre eigenen Texte, Schriften, Bilder und Skripte von dieser Website. Jede dieser Anfragen ist eine einfache Anfrage nach einer Datei. Keine Anfrage enth&auml;lt Ihr Foto oder etwas, das daraus erzeugt wurde.</p>
 <h3>Auf Ihrem Ger&auml;t gespeicherte Daten</h3>
-<p>Das Modell (etwa 46 MB) wird im Cache Ihres Browsers gespeichert, damit es nur einmal geladen werden muss. Das ist f&uuml;r die von Ihnen gew&uuml;nschte Funktion erforderlich und enth&auml;lt keine personenbezogenen Daten. Sie k&ouml;nnen es jederzeit entfernen, indem Sie die Websitedaten in den Browsereinstellungen l&ouml;schen. Wir setzen keine Cookies.</p>
+<p>Das Modell liegt im Cache Ihres Browsers, damit es nur einmal geladen werden muss. Das ist f&uuml;r die von Ihnen gew&uuml;nschte Funktion erforderlich und enth&auml;lt keine personenbezogenen Daten. Wenn Sie &bdquo;Benachrichtigen, wenn fertig&ldquo; einschalten, speichert die Seite diese Wahl zus&auml;tzlich im lokalen Speicher Ihres Browsers. Sie k&ouml;nnen beides jederzeit entfernen, indem Sie die Websitedaten in den Browsereinstellungen l&ouml;schen. Wir setzen keine Cookies.</p>
+<h3 id="pruefen">So pr&uuml;fen Sie es selbst</h3>
+<p>&Ouml;ffnen Sie die Entwicklerwerkzeuge Ihres Browsers (F12, am Mac Cmd+Option+I) und gehen Sie zum Tab &bdquo;Netzwerk&ldquo;. Ziehen Sie ein Foto auf die Seite und beobachten Sie die Liste. Sie sehen keinen Upload, nur GET-Anfragen nach Dateien von backgroundkiller.com, und nach dem Laden des Modells macht die Seite keine weiteren Anfragen. Schalten Sie den Browser nach dem Laden der Seite offline, und das Werkzeug arbeitet weiter.</p>
 <h3>Hosting und Server-Logs</h3>
-<p>Die Website wird von Cloudflare, Inc. (USA) ausgeliefert. Beim Aufruf einer Seite sendet Ihr Browser eine Anfrage, die Ihre IP-Adresse, die Uhrzeit, die angeforderte Seite und technische Angaben wie den Browsertyp enth&auml;lt. Cloudflare verarbeitet diese Daten, um die Website auszuliefern und abzusichern, und speichert sie gegebenenfalls in Server-Logs. Wir f&uuml;hren keine eigenen Logs, und Ihre Fotos sind nicht Teil dieser Anfragen. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO, unser Interesse an einer sicheren und zuverl&auml;ssigen Website. Soweit Daten in die USA &uuml;bermittelt werden, beruht dies auf den Garantien aus den Datenverarbeitungsbedingungen von Cloudflare, etwa dem EU-US Data Privacy Framework und Standardvertragsklauseln. Es gilt zus&auml;tzlich die Datenschutzerkl&auml;rung von Cloudflare.</p>
+<p>Die Website wird von Cloudflare, Inc. (USA) ausgeliefert. Beim Aufruf einer Seite sendet Ihr Browser eine Anfrage, die Ihre IP-Adresse, die Uhrzeit, die angeforderte Seite und technische Angaben wie den Browsertyp enth&auml;lt. Cloudflare verarbeitet diese Daten, um die Website auszuliefern und abzusichern, und speichert sie gegebenenfalls in Server-Logs. Wir f&uuml;hren keine eigenen Logs. Diese Anfragen enthalten nie Ihre Fotos. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO, unser Interesse an einer sicheren und zuverl&auml;ssigen Website. Soweit Daten in die USA &uuml;bermittelt werden, beruht dies auf den Garantien aus den Datenverarbeitungsbedingungen von Cloudflare, etwa dem EU-US Data Privacy Framework und Standardvertragsklauseln. Es gilt zus&auml;tzlich die Datenschutzerkl&auml;rung von Cloudflare.</p>
 <h3>Schriften und andere Ressourcen</h3>
 <p>Schriften, Skripte und Bilder werden von dieser Website selbst ausgeliefert. Ihr Browser nimmt dazu keinen Kontakt zu Google oder anderen Dritten auf.</p>
 <h3>Kontakt</h3>
 <p>Wenn Sie uns eine E-Mail schreiben, verwenden wir Ihre Nachricht und Adresse nur, um zu antworten, und speichern sie so lange, wie es daf&uuml;r erforderlich ist. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO, bei vertragsbezogenen Anfragen Art. 6 Abs. 1 lit. b DSGVO.</p>
 <h3>Werbung</h3>
-<p>Die Website zeigt derzeit keine Werbung. Falls wir welche einf&uuml;hren, aktualisieren wir zuvor diese Erkl&auml;rung und holen Ihre Einwilligung ein, soweit das Gesetz es verlangt, bevor Werbeskripte geladen werden.</p>
+<p>Auf dieser Website wird derzeit keine Werbung geladen, und auf der Seite gibt es keinen Werbe-, Analyse- oder Tracking-Code. Im Layout sind zwei leere Pl&auml;tze, an denen sp&auml;ter Werbung stehen k&ouml;nnte. Sie sind mit keinem Werbeanbieter verbunden.</p>
+<p>Falls wir Werbung einf&uuml;hren, finanziert sie die Domain, das Hosting und die Arbeit am Betrieb der Seite, und ein etwaiger &Uuml;berschuss geht an den Betreiber. Wir nennen den Werbeanbieter auf dieser Seite, bevor Werbecode l&auml;uft, und holen Ihre Einwilligung ein, soweit das Gesetz es verlangt. Werbeanbieter sehen in der Regel Ihre IP-Adresse, Browser- und Ger&auml;tetyp, die Adresse der Seite und welche Anzeigen Sie anklicken, und sie k&ouml;nnen Cookies setzen, um Anzeigen zuzuordnen. Was der gew&auml;hlte Anbieter erhebt, listen wir dann hier auf. Wir geben keinem Werbeanbieter Ihre Fotos, und vor dem Start pr&uuml;fen wir im Netzwerk-Tab, dass keine Werbeanfrage eines enth&auml;lt.</p>
 <h3>Ihre Rechte</h3>
 <p>Sie haben nach der DSGVO das Recht auf Auskunft, Berichtigung, L&ouml;schung, Einschr&auml;nkung der Verarbeitung, Daten&uuml;bertragbarkeit und Widerspruch. Sie k&ouml;nnen sich au&szlig;erdem bei einer Aufsichtsbeh&ouml;rde beschweren, zum Beispiel bei der Berliner Beauftragten f&uuml;r Datenschutz und Informationsfreiheit, Alt-Moabit 59-61, 10555 Berlin.</p>
 </div>
@@ -367,6 +395,8 @@ page("/licenses",
      """
 <h1>Licenses and credits</h1>
 <p class="lead">Background Killer is built on open work by other people. Here is what it uses and under which terms.</p>
+<h2>This site's code</h2>
+<p>The code of Background Killer is released under the MIT licence: <a href="/LICENSE.txt">LICENSE</a>. The licence covers the code only. The name Background Killer, the logo, the Claw artwork and the sample photos are not covered, and all rights in them stay with Pigrosoft. Version history is in the <a href="/CHANGELOG.txt">changelog</a>.</p>
 <h2>The cutout model</h2>
 <p>The model that finds the subject in your photo is <strong>ISNet general-use</strong>, from the DIS project (Dichotomous Image Segmentation) by Xuebin Qin and colleagues, released under the Apache License 2.0. It is described in &ldquo;Highly Accurate Dichotomous Image Segmentation&rdquo; (ECCV 2022). We converted it to the ONNX format and compressed it to 8 bits so that it runs in a browser. It runs entirely on your device.</p>
 <ul>
