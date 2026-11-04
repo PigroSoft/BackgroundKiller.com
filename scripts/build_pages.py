@@ -87,7 +87,7 @@ def related(skip):
 # ---------------------------------------------------------------- home FAQ (visible text and JSON-LD come from here)
 FAQ = [
     ("Is Background Killer really free?",
-     "Yes. There are no credits, accounts or watermarks, and you can cut out as many photos as you like. We may add ads to the page later to pay for the domain."),
+     "Yes. There are no credits, accounts or watermarks, and you can cut out as many photos as you like."),
     ("Is this a remove.bg alternative?",
      'Yes. remove.bg has announced that its standalone website will close on 1 December 2026. Background Killer does the same basic job, and the free download is full size. <a href="/remove-bg-alternative">Here is how they compare</a>.'),
     ("Do you upload my photo?",
@@ -313,7 +313,7 @@ page("/privacy",
 <h2>Controller</h2>
 <p>Jeffrey Humble (Pigrosoft), Peschkestr. 5, 12161 Berlin, Germany. Email: <a href="mailto:support@pigrosoft.com">support@pigrosoft.com</a>. See also the <a href="/imprint">imprint</a>.</p>
 <h2>The short version</h2>
-<p>Background Killer removes backgrounds inside your browser. The photos you add are processed on your own device and are not uploaded to us or to anyone else. The site has no accounts, no cookies, no analytics and no advertising at the moment.</p>
+<p>Background Killer removes backgrounds inside your browser. The photos you add are processed on your own device and are not uploaded to us or to anyone else. The site has no accounts, no cookies, no analytics and no tracking.</p>
 <h2>Your photos</h2>
 <p>When you add an image, your browser reads it and the cutout model runs on your device. The image, the cutout and your edits stay in your browser's memory and are gone when you close or reload the page, unless you download them. We never receive them.</p>
 <h2>What the page downloads</h2>
@@ -328,9 +328,6 @@ page("/privacy",
 <p>Fonts, scripts and images are served from this site itself. Your browser does not contact Google or other third parties to display it.</p>
 <h2>Contacting us</h2>
 <p>If you email us, we use your message and address only to reply and keep them as long as needed for that purpose. The legal basis is Art. 6(1)(f) GDPR, or Art. 6(1)(b) if your message relates to a contract.</p>
-<h2>Advertising</h2>
-<p>No ads load on this site today, and there is no ad, analytics or tracking code on the page. The layout has two empty spots where ads may go later. They are not connected to any ad provider.</p>
-<p>If we add ads, they will pay for the domain, the hosting and the work of keeping the site running, and any extra goes to the maker. We will name the ad provider on this page before any ad code runs, and we will ask for your consent where the law requires it. Ad providers usually see your IP address, your browser and device type, the address of the page and which ads you click, and they may set cookies to match ads to you. We will list what the chosen provider collects here. We will not give an ad provider your photos, and before launch we will check in the network tab that no ad request carries one.</p>
 <h2>Your rights</h2>
 <p>You have the right to access, rectification, erasure, restriction of processing, data portability and objection under the GDPR. You can also lodge a complaint with a supervisory authority, for example the Berlin Commissioner for Data Protection and Freedom of Information (Berliner Beauftragte f&uuml;r Datenschutz und Informationsfreiheit), Alt-Moabit 59-61, 10555 Berlin, Germany.</p>
 
@@ -340,7 +337,7 @@ page("/privacy",
 <h3>Verantwortlicher</h3>
 <p>Jeffrey Humble (Pigrosoft), Peschkestr. 5, 12161 Berlin, Deutschland. E-Mail: <a href="mailto:support@pigrosoft.com">support@pigrosoft.com</a>. Siehe auch das <a href="/imprint#de">Impressum</a>.</p>
 <h3>Kurzfassung</h3>
-<p>Background Killer entfernt Hintergr&uuml;nde direkt in Ihrem Browser. Die Bilder, die Sie hinzuf&uuml;gen, werden auf Ihrem eigenen Ger&auml;t verarbeitet und nicht an uns oder Dritte hochgeladen. Die Website hat derzeit keine Benutzerkonten, keine Cookies, keine Analyse und keine Werbung.</p>
+<p>Background Killer entfernt Hintergr&uuml;nde direkt in Ihrem Browser. Die Bilder, die Sie hinzuf&uuml;gen, werden auf Ihrem eigenen Ger&auml;t verarbeitet und nicht an uns oder Dritte hochgeladen. Die Website hat derzeit keine Benutzerkonten, keine Cookies, keine Analyse und kein Tracking.</p>
 <h3>Ihre Fotos</h3>
 <p>Wenn Sie ein Bild hinzuf&uuml;gen, liest Ihr Browser es ein, und das Modell zum Freistellen l&auml;uft auf Ihrem Ger&auml;t. Bild, Freisteller und Ihre Bearbeitungen bleiben im Arbeitsspeicher Ihres Browsers und sind weg, sobald Sie die Seite schlie&szlig;en oder neu laden, sofern Sie sie nicht herunterladen. Wir erhalten sie nie.</p>
 <h3>Was die Seite herunterl&auml;dt</h3>
@@ -355,9 +352,6 @@ page("/privacy",
 <p>Schriften, Skripte und Bilder werden von dieser Website selbst ausgeliefert. Ihr Browser nimmt dazu keinen Kontakt zu Google oder anderen Dritten auf.</p>
 <h3>Kontakt</h3>
 <p>Wenn Sie uns eine E-Mail schreiben, verwenden wir Ihre Nachricht und Adresse nur, um zu antworten, und speichern sie so lange, wie es daf&uuml;r erforderlich ist. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO, bei vertragsbezogenen Anfragen Art. 6 Abs. 1 lit. b DSGVO.</p>
-<h3>Werbung</h3>
-<p>Auf dieser Website wird derzeit keine Werbung geladen, und auf der Seite gibt es keinen Werbe-, Analyse- oder Tracking-Code. Im Layout sind zwei leere Pl&auml;tze, an denen sp&auml;ter Werbung stehen k&ouml;nnte. Sie sind mit keinem Werbeanbieter verbunden.</p>
-<p>Falls wir Werbung einf&uuml;hren, finanziert sie die Domain, das Hosting und die Arbeit am Betrieb der Seite, und ein etwaiger &Uuml;berschuss geht an den Betreiber. Wir nennen den Werbeanbieter auf dieser Seite, bevor Werbecode l&auml;uft, und holen Ihre Einwilligung ein, soweit das Gesetz es verlangt. Werbeanbieter sehen in der Regel Ihre IP-Adresse, Browser- und Ger&auml;tetyp, die Adresse der Seite und welche Anzeigen Sie anklicken, und sie k&ouml;nnen Cookies setzen, um Anzeigen zuzuordnen. Was der gew&auml;hlte Anbieter erhebt, listen wir dann hier auf. Wir geben keinem Werbeanbieter Ihre Fotos, und vor dem Start pr&uuml;fen wir im Netzwerk-Tab, dass keine Werbeanfrage eines enth&auml;lt.</p>
 <h3>Ihre Rechte</h3>
 <p>Sie haben nach der DSGVO das Recht auf Auskunft, Berichtigung, L&ouml;schung, Einschr&auml;nkung der Verarbeitung, Daten&uuml;bertragbarkeit und Widerspruch. Sie k&ouml;nnen sich au&szlig;erdem bei einer Aufsichtsbeh&ouml;rde beschweren, zum Beispiel bei der Berliner Beauftragten f&uuml;r Datenschutz und Informationsfreiheit, Alt-Moabit 59-61, 10555 Berlin.</p>
 </div>
@@ -372,7 +366,7 @@ page("/terms",
 <h2>1. What this is</h2>
 <p>Background Killer is a free tool at backgroundkiller.com that removes the background from images in your browser. It is provided by Jeffrey Humble (Pigrosoft), Berlin (see the <a href="/imprint">imprint</a>). By using it, you agree to these terms.</p>
 <h2>2. Free of charge</h2>
-<p>The service is free. We may change it, limit it or stop it at any time, and we may show advertising in the future. If we do, we will say so in the <a href="/privacy">privacy policy</a> first.</p>
+<p>The service is free. We may change it, limit it or stop it at any time.</p>
 <h2>3. Your images</h2>
 <p>Your images are processed on your own device and are not uploaded to us. They stay yours, and we claim no rights in them or in the results. You confirm that you have the right to edit the images you use, and that they do not break the law or the rights of others.</p>
 <h2>4. Acceptable use</h2>

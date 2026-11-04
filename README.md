@@ -20,10 +20,7 @@ The guide, legal and about pages, the footer, the FAQ and the sitemap are genera
 ## Deploy (Cloudflare Workers with static assets)
 `wrangler.jsonc` points Cloudflare at `public/`. Connect this repo in the Cloudflare dashboard (Workers & Pages, Create, Import a repository), leave the build command empty and keep the default deploy command `npx wrangler deploy`. Every push to the main branch redeploys.
 
-Do not add COOP/COEP headers to get multi-threaded WASM: they block ad iframes.
-
-## Ads
-Two slots are in the markup (`.ad-leader`, `.ad-rect`) and hidden by default. When ads are approved, put the ad code in them and add `class="ads-on"` to `<body>`. Add a consent banner and an imprint (Impressum) page at the same time, and update the privacy text in `scripts/build_pages.py` and run it.
+Do not add COOP/COEP headers to get multi-threaded WASM: they block third-party embeds.
 
 ## Local preview
 `cd public && python3 -m http.server 8000`
