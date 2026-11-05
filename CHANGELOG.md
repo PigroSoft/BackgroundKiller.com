@@ -2,6 +2,10 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.5, 6 November 2026
+
+- Home page: a lighter checkerboard, a higher fade to black on wide screens so less of Claw's coat shows, and dark backing behind the small tip and sample text so it can be read.
+
 ## 1.0.4, 6 November 2026
 
 - Edge refinement is up to twice as fast. The result is the same.
