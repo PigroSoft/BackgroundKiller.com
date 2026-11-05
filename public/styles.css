@@ -45,12 +45,12 @@ body::after {
 /* One photograph behind the header and hero. Its torn right side is real alpha, so the checkerboard shows through. */
 .noir-backdrop {
   position: absolute; inset: 0; z-index: 0; overflow: hidden; pointer-events: none;
-  background-color: #4d5a5c;
-  background-image: conic-gradient(#718183 25%, transparent 0 50%, #505d5e 0 75%, transparent 0);
+  background-color: #333c3d;
+  background-image: conic-gradient(#505d5e 25%, transparent 0 50%, #505d5e 0 75%, transparent 0);
   background-size: 32px 32px;
 }
 .noir-scene { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; display: block; }
-.noir-backdrop::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 46%, rgba(16,17,18,.12) 56%, rgba(16,17,18,.4) 67%, rgba(16,17,18,.74) 77%, rgba(16,17,18,.95) 85%, #101112 91%); }
+.noir-backdrop::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 62%, rgba(16,17,18,.12) 72%, rgba(16,17,18,.38) 82%, rgba(16,17,18,.72) 91%, rgba(16,17,18,.94) 97%, #101112 100%); }
 
 /* Header */
 .top { position: relative; }
@@ -86,7 +86,7 @@ body::after {
   position: relative; z-index: 1; grid-column: 2; grid-row: 1; align-self: end; justify-self: center;
   width: 100%; height: auto; display: block; pointer-events: none;
   filter: drop-shadow(0 18px 22px #000a);
-  -webkit-mask-image: linear-gradient(to bottom, #000 58%, transparent 88%); mask-image: linear-gradient(to bottom, #000 58%, transparent 88%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 99%); mask-image: linear-gradient(to bottom, #000 78%, transparent 99%);
 }
 
 .upload-column { grid-column: 3; grid-row: 1; position: relative; z-index: 2; align-self: center; width: 100%; max-width: 380px; justify-self: end; margin-bottom: 56px; }
@@ -275,7 +275,7 @@ input[type="range"]:disabled { opacity: .45; }
 .page p, .page li { color: #d0d2cf; }
 
 /* pro tip, footer, article pages */
-.protip { margin: 14px 0 0; padding: 10px 14px; border-radius: 12px; background: #101213d9; font-size: 14px; color: #d9dcd9; line-height: 1.5; }
+.protip { margin: 14px 0 0; font-size: 14px; color: #c3cac9; line-height: 1.5; }
 .protip b { color: var(--text, #f3f1ec); }
 .protip kbd { font: 600 12px/1 var(--body, inherit); padding: 3px 6px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: var(--panel); color: #f3f1ec; white-space: nowrap; }
 body.working .protip { display: none; }
@@ -367,8 +367,3 @@ body.batch-view.working .workspace { display: none; }
 
 .batch-zip { display: flex; justify-content: center; margin-top: 22px; }
 @media (min-width: 881px) { .app > .mat { position: sticky; top: 16px; } }
-/* Stacked layout: the cat sits mid-page, so keep the original, lower fade there. */
-@media (max-width: 1000px) {
-  .noir-backdrop::after { background: linear-gradient(to bottom, transparent 62%, rgba(16,17,18,.12) 72%, rgba(16,17,18,.38) 82%, rgba(16,17,18,.72) 91%, rgba(16,17,18,.94) 97%, #101112 100%); }
-  .hero-cat { -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 99%); mask-image: linear-gradient(to bottom, #000 78%, transparent 99%); }
-}

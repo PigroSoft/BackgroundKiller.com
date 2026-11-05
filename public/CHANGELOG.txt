@@ -4,7 +4,7 @@ The version number and date live in `public/version.js`. To release, change them
 
 ## 1.0.5, 6 November 2026
 
-- Home page: a lighter checkerboard, a higher fade to black on wide screens so less of Claw's coat shows, and dark backing behind the small tip and sample text so it can be read.
+- Home page: the pro tip now sits inside the upload card, and the sample photo row has a dark backing so it can be read.
 
 ## 1.0.4, 6 November 2026
 
