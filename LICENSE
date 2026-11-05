@@ -4,9 +4,11 @@ Copyright (c) 2026 Jeffrey Humble (Pigrosoft)
 What this licence covers: the source code in this repository, meaning the HTML,
 CSS, JavaScript and scripts written for Background Killer.
 
-What it does not cover: the name "Background Killer", the logo, the Claw
+What it does not cover: the name "Background Killer", the logo and icons
+(public/favicon.png, public/apple-touch-icon.png, public/og.jpg), the Claw
 artwork and the other images in public/assets/, the sample photos in
-public/sample/, and the third-party files listed below. All rights in the name,
+public/sample/, the screenshot in docs/, and the third-party files listed
+below. All rights in the name,
 logo, artwork and sample photos stay with Pigrosoft. Third-party files keep
 their own licences, which are in public/licenses/.
 

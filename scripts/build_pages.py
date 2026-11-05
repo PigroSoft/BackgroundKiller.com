@@ -15,7 +15,7 @@ GUIDES = [
     ("/make-png-transparent", "Make a transparent PNG"),
     ("/product-photo-background-remover", "Product photo backgrounds"),
 ]
-LEGAL = [("/about", "About"), ("/imprint", "Imprint"), ("/privacy", "Privacy"), ("/terms", "Terms"), ("/licenses", "Licenses")]
+LEGAL = [("/about", "About"), ("/imprint", "Imprint"), ("/privacy", "Privacy"), ("/terms", "Terms"), ("/licenses", "Licenses"), ("https://github.com/PigroSoft/BackgroundKiller.com", "Source code")]
 
 FOOTER = """<footer class="site-footer">
   <div class="footer-brand">
@@ -273,7 +273,7 @@ page("/about",
 <h2>How it works</h2>
 <p>The cutout runs inside your browser. It uses the ISNet model, which is licensed under Apache-2.0, and ONNX Runtime Web, which is licensed under MIT. Your photo does not leave your device. The page says exactly what it downloads in the <a href="/privacy#check">privacy text</a>, with steps to check it in your browser's network tab. The scripts that run on the page are plain JavaScript, so you can read them with your browser's developer tools.</p>
 <h2>Licence</h2>
-<p>The code is released under the MIT licence. Read it in <a href="/LICENSE.txt">LICENSE</a>. The name, logo, Claw artwork and sample photos are not part of that licence. The model, software and fonts we use keep their own licences, which are listed with credits on the <a href="/licenses">licenses page</a>.</p>
+<p>Background Killer is open source. The <a href="https://github.com/PigroSoft/BackgroundKiller.com">source code is on GitHub</a>, released under the MIT licence. Read it in <a href="/LICENSE.txt">LICENSE</a>. The name, logo, Claw artwork and sample photos are not part of that licence. The model, software and fonts we use keep their own licences, which are listed with credits on the <a href="/licenses">licenses page</a>.</p>
 <h2>Version</h2>
 <p>The current version and its date are in the footer of every page. What changed in each version is in the <a href="/CHANGELOG.txt">changelog</a>.</p>
 """, crumb="About")
@@ -426,7 +426,7 @@ html404 = head("Page not found | Background Killer", "This page has gone into hi
 (ROOT / "404.html").write_text(html404, encoding="utf-8")
 
 # ---------------------------------------------------------------- sitemap and robots
-paths = ["/"] + [g[0] for g in GUIDES] + [l[0] for l in LEGAL]
+paths = ["/"] + [g[0] for g in GUIDES] + [l[0] for l in LEGAL if l[0].startswith("/")]
 sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
 for p in paths:
     sm += "  <url><loc>%s%s</loc><lastmod>2026-11-04</lastmod></url>\n" % (SITE, p if p != "/" else "/")

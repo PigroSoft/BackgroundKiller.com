@@ -1,6 +1,10 @@
 # Background Killer
 
-backgroundkiller.com: a free background remover that runs entirely in the browser. No server, no uploads, full-resolution downloads.
+A free background remover that runs entirely in your browser. There is no server and nothing is uploaded, downloads stay at full resolution, and you can cut a whole batch of photos at once and take them as a zip.
+
+**[Use it at backgroundkiller.com](https://backgroundkiller.com)**
+
+![The Background Killer home page](docs/screenshot.jpg)
 
 ## How it works
 - `public/` is the whole site. Plain HTML, CSS and JavaScript, no build step.
@@ -10,6 +14,11 @@ backgroundkiller.com: a free background remover that runs entirely in the browse
 
 ## Licence
 The code is MIT licensed, see `LICENSE`. The licence does not cover the name, logo, Claw artwork, other images in `public/assets/` or the sample photos. The model, runtime, JSZip and fonts keep their own licences in `public/licenses/`.
+
+If you fork this and publish your own copy, use your own name and artwork, and replace the imprint, privacy and terms pages with your own details.
+
+## Contributing
+Bug reports and pull requests are welcome, and the site should stay free of servers, uploads and third-party requests. For anything else, write to support@pigrosoft.com.
 
 ## Version
 Edit `public/version.js` (version and date, shown in every footer), then add an entry to `CHANGELOG.md` and copy it to `public/CHANGELOG.txt`.

@@ -2,6 +2,10 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.1, 5 November 2026
+
+- The source code is now public on GitHub under the MIT licence, linked from the footer and the About page.
+
 ## 1.0, 4 November 2026
 
 First public version.
