@@ -366,3 +366,7 @@ body.batch-view.working .workspace { display: none; }
 
 .batch-zip { display: flex; justify-content: center; margin-top: 22px; }
 @media (min-width: 881px) { .app > .mat { position: sticky; top: 16px; } }
+/* Wide layout: Claw sits a little lower so the third tear in the photo shows above his hat, and his fade starts below the claws. */
+@media (min-width: 1001px) {
+  .hero-cat { transform: translateY(30px); -webkit-mask-image: linear-gradient(to bottom, #000 84%, transparent 93%); mask-image: linear-gradient(to bottom, #000 84%, transparent 93%); }
+}
