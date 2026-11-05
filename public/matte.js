@@ -22,15 +22,15 @@
         if (lo >= 0) { s -= src[row + lo]; c--; }
       }
     }
-    for (x = 0; x < w; x++) {
-      s = 0; c = 0;
-      for (y = 0; y <= r && y < h; y++) { s += tmp[y * w + x]; c++; }
-      for (y = 0; y < h; y++) {
-        out[y * w + x] = s / c;
-        hi = y + r + 1; lo = y - r;
-        if (hi < h) { s += tmp[hi * w + x]; c++; }
-        if (lo >= 0) { s -= tmp[lo * w + x]; c--; }
-      }
+    // Vertical pass, row by row so memory is read in order (much faster than walking down columns).
+    var col = new Float64Array(w), cnt = 0, yy;
+    for (yy = 0; yy <= r && yy < h; yy++) { var ro = yy * w; for (x = 0; x < w; x++) col[x] += tmp[ro + x]; cnt++; }
+    for (y = 0; y < h; y++) {
+      var o = y * w, inv = 1 / cnt;
+      for (x = 0; x < w; x++) out[o + x] = col[x] * inv;
+      hi = y + r + 1; lo = y - r;
+      if (hi < h) { var rh = hi * w; for (x = 0; x < w; x++) col[x] += tmp[rh + x]; cnt++; }
+      if (lo >= 0) { var rl = lo * w; for (x = 0; x < w; x++) col[x] -= tmp[rl + x]; cnt--; }
     }
     return out;
   }
@@ -59,7 +59,7 @@
     var n = w * h, blur = Blur(w, h), i, j, k;
     var gray = new Float32Array(n);
     for (i = 0, j = 0; i < n; i++, j += 4) gray[i] = (0.299 * rgba[j] + 0.587 * rgba[j + 1] + 0.114 * rgba[j + 2]) / 255;
-    var big = Math.max(w, h), r1 = Math.max(3, Math.round(big * 0.0045)), r2 = Math.max(2, Math.round(big * 0.0016));
+    var big = (opts && opts.big) || Math.max(w, h), r1 = Math.max(3, Math.round(big * 0.0045)), r2 = Math.max(2, Math.round(big * 0.0016));
     var q = guided(gray, p, w, h, r1, 0.0012, blur);
     q = guided(gray, q, w, h, r2, 0.0002, blur);
     // Anything the model was sure about stays sure: refinement only works on the uncertain band.
@@ -114,7 +114,7 @@
   function refineNew(rgba, p, w, h, opts) {
     var T = {}; for (var kk in TUNE) T[kk] = (g.BK_TUNE && g.BK_TUNE[kk] !== undefined) ? g.BK_TUNE[kk] : TUNE[kk];
     var n = w * h, blur = Blur(w, h), i, j, k, it;
-    var big = Math.max(w, h);
+    var big = (opts && opts.big) || Math.max(w, h);
     var I = [new Float32Array(n), new Float32Array(n), new Float32Array(n)], gray = new Float32Array(n);
     for (i = 0, j = 0; i < n; i++, j += 4) {
       I[0][i] = rgba[j] / 255; I[1][i] = rgba[j + 1] / 255; I[2][i] = rgba[j + 2] / 255;
@@ -220,12 +220,12 @@
 
   /* Blend the two: the unmixing result where the background around the subject is smooth, the plain guided result
      where it is busy (unmixing cannot tell subject from clutter there). */
-  function refine(rgba, p, w, h, opts) {
+  function refineFull(rgba, p, w, h, opts) {
     var T = {}; for (var kk in TUNE) T[kk] = (g.BK_TUNE && g.BK_TUNE[kk] !== undefined) ? g.BK_TUNE[kk] : TUNE[kk];
     var base = refineBase(rgba, p, w, h, opts);
     var nu = refineNew(rgba, p, w, h, opts);
     if (!nu.uvar) return base;
-    var n = w * h, big = Math.max(w, h), i, j, blur = Blur(w, h);
+    var n = w * h, big = (opts && opts.big) || Math.max(w, h), i, j, blur = Blur(w, h);
     var u = new Float32Array(n), lo = T.vlo, hi = T.vhi;
     for (i = 0; i < n; i++) { var t = (nu.uvar[i] - lo) / (hi - lo); t = t < 0 ? 0 : t > 1 ? 1 : t; u[i] = 1 - t * t * (3 - 2 * t); }
     u = blur(u, Math.max(4, Math.round(big * 0.01)));
@@ -235,6 +235,67 @@
       alpha[i] = nu.alpha[i] * m + base.alpha[i] * (1 - m) + 0.5;
       fg[j] = nu.fg[j] * m + base.fg[j] * (1 - m); fg[j + 1] = nu.fg[j + 1] * m + base.fg[j + 1] * (1 - m);
       fg[j + 2] = nu.fg[j + 2] * m + base.fg[j + 2] * (1 - m); fg[j + 3] = nu.fg[j + 3] * m + base.fg[j + 3] * (1 - m);
+    }
+    return { w: w, h: h, alpha: alpha, fg: fg };
+  }
+  /* Some blurry things next to the subject (a window frame, a lamp pole) get a faint, unsure mask that runs off the
+     edge of the photo. Real parts of the subject are either solid or small fringes around the solid part. So find
+     patches where the model was never sure (mask between 5% and 50%), that are thick enough to be more than a fringe,
+     and that reach the photo's border, and drop them. Works on a coarse grid. */
+  function dropBorderStrips(p, w, h) {
+    var S = 4, cw = Math.ceil(w / S), ch = Math.ceil(h / S), cn = cw * ch, i, x, y, blur = Blur(cw, ch);
+    var big = Math.max(cw, ch), r3 = Math.max(3, Math.round(big * 0.012));
+    var prot = new Float32Array(cn), cnt = new Float32Array(cn), any = false;
+    for (y = 0; y < h; y++) for (x = 0, i = y * w; x < w; x++, i++) { var ci = ((y / S) | 0) * cw + ((x / S) | 0); cnt[ci]++; if (p[i] > 0.05 && p[i] < 0.5) prot[ci]++; }
+    for (i = 0; i < cn; i++) { prot[i] = prot[i] / cnt[i] > 0.5 ? 1 : 0; if (prot[i]) any = true; }
+    if (!any) return p;
+    var core = blur(prot, r3); for (i = 0; i < cn; i++) core[i] = core[i] > 0.999 ? 1 : 0;
+    // Keep only the cores that reach the border; flood fill through the protrusion from them.
+    var rm = new Uint8Array(cn), stack = [], found = false, edge = 2;
+    for (y = 0; y < ch; y++) for (x = 0; x < cw; x++) {
+      i = y * cw + x;
+      if (core[i] && (x < edge || y < edge || x >= cw - edge || y >= ch - edge)) { rm[i] = 1; stack.push(i); found = true; }
+    }
+    if (!found) return p;
+    while (stack.length) {
+      i = stack.pop(); x = i % cw; y = (i / cw) | 0;
+      for (var d = 0; d < 4; d++) {
+        var nx = x + (d === 0 ? 1 : d === 1 ? -1 : 0), ny = y + (d === 2 ? 1 : d === 3 ? -1 : 0);
+        if (nx < 0 || ny < 0 || nx >= cw || ny >= ch) continue;
+        var ni = ny * cw + nx;
+        if (!rm[ni] && core[ni]) { rm[ni] = 1; stack.push(ni); }
+      }
+    }
+    // Grow the kept cores back out to the full strip, but only across protrusion pixels.
+    var seedF = new Float32Array(cn); for (i = 0; i < cn; i++) seedF[i] = rm[i];
+    var grown = blur(seedF, r3 + 1);
+    var out = new Float32Array(p.length); out.set(p);
+    for (y = 0; y < h; y++) for (x = 0, i = y * w; x < w; x++, i++) {
+      var c2 = ((y / S) | 0) * cw + ((x / S) | 0);
+      if (prot[c2] && grown[c2] > 0.001) out[i] = 0;
+    }
+    return out;
+  }
+  /* Only the area around the subject needs work, so cut it out, refine that, and paste the result back. */
+  function refine(rgba, p, w, h, opts) {
+    p = dropBorderStrips(p, w, h);
+    var n = w * h, i, x, y, x0 = w, x1 = -1, y0 = h, y1 = -1;
+    for (y = 0; y < h; y++) for (x = 0, i = y * w; x < w; x++, i++) if (p[i] > 0.01) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    if (x1 < 0) return { w: w, h: h, alpha: new Uint8ClampedArray(n), fg: new Uint8ClampedArray(n * 4) };
+    var m = Math.round(Math.max(w, h) * 0.08);
+    x0 = Math.max(0, x0 - m); y0 = Math.max(0, y0 - m); x1 = Math.min(w - 1, x1 + m); y1 = Math.min(h - 1, y1 + m);
+    var cw = x1 - x0 + 1, ch = y1 - y0 + 1;
+    if (cw * ch > n * 0.85) return refineFull(rgba, p, w, h, opts);
+    var cr = new Uint8ClampedArray(cw * ch * 4), cp = new Float32Array(cw * ch);
+    for (y = 0; y < ch; y++) {
+      cr.set(rgba.subarray(((y + y0) * w + x0) * 4, ((y + y0) * w + x0 + cw) * 4), y * cw * 4);
+      cp.set(p.subarray((y + y0) * w + x0, (y + y0) * w + x0 + cw), y * cw);
+    }
+    var r = refineFull(cr, cp, cw, ch, { big: Math.max(w, h) });
+    var alpha = new Uint8ClampedArray(n), fg = new Uint8ClampedArray(n * 4);
+    for (y = 0; y < ch; y++) {
+      alpha.set(r.alpha.subarray(y * cw, (y + 1) * cw), (y + y0) * w + x0);
+      fg.set(r.fg.subarray(y * cw * 4, (y + 1) * cw * 4), ((y + y0) * w + x0) * 4);
     }
     return { w: w, h: h, alpha: alpha, fg: fg };
   }

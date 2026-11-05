@@ -11,7 +11,7 @@ below. All rights in the name,
 logo and artwork stay with Pigrosoft. The sample photo in public/sample/ is by
 Arjunmz under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), from
 https://commons.wikimedia.org/wiki/File:Ragdoll_kitten_on_the_prowl_2017_(cropped_2022).jpg ,
-cropped and resized. Third-party files keep
+resized. Third-party files keep
 their own licences, which are in public/licenses/.
 
 Third-party files: the ISNet model (Apache-2.0) in public/model/, ONNX Runtime

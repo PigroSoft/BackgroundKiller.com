@@ -2,6 +2,11 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.4, 6 November 2026
+
+- Edge refinement is up to twice as fast. The result is the same.
+- Faint, unsure patches of mask that run off the edge of the photo, like a blurred window frame touching the subject, are now dropped.
+
 ## 1.0.3, 6 November 2026
 
 - Faint smears of motion blur far from the subject are now dropped, so stray streaks no longer hang off tails and ears.
