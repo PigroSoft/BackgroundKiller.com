@@ -2,6 +2,10 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.9, 6 November 2026
+
+- Home page: the ragged corner of the photo at the top left now sits on black instead of the checkerboard, which starts where the paper is cut.
+
 ## 1.0.8, 6 November 2026
 
 - Home page: Claw sits a little lower on wide screens, so all three tears in the photo show and his claws stay in view.
