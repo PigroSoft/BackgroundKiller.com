@@ -54,11 +54,8 @@
       <p class="protip"><b>Pro tip:</b> copy an image, then press <kbd class="pastekey">Ctrl+V</kbd> anywhere on this page. It is the fastest way in.</p>
       <div class="sample-row samples" role="group" aria-label="Sample photos">
         <span>No photo handy?</span>
-        <button class="sample" type="button" data-src="sample/kitten-basket.jpg" data-name="kitten-basket.jpg" aria-label="Try the photo of a kitten in a basket"><img src="sample/thumb-kitten-basket.jpg" alt="" width="44" height="44"></button>
-        <button class="sample" type="button" data-src="sample/kitten-sofa.jpg" data-name="kitten-sofa.jpg" aria-label="Try the photo of a kitten on a sofa"><img src="sample/thumb-kitten-sofa.jpg" alt="" width="44" height="44"></button>
-        <button class="sample" type="button" data-src="sample/kitten-bench.jpg" data-name="kitten-bench.jpg" aria-label="Try the photo of a kitten on a bench"><img src="sample/thumb-kitten-bench.jpg" alt="" width="44" height="44"></button>
-        <button class="sample" type="button" data-src="sample/kitten-window.jpg" data-name="kitten-window.jpg" aria-label="Try the photo of a kitten at a window"><img src="sample/thumb-kitten-window.jpg" alt="" width="44" height="44"></button>
-      </div>
+        <button class="sample" type="button" data-src="sample/ragdoll-kitten.jpg" data-name="ragdoll-kitten.jpg" aria-label="Try the photo of a ragdoll kitten"><img src="sample/thumb-ragdoll-kitten.jpg" alt="" width="44" height="44"></button>
+</div>
     </div>
   </section>
 </div>
@@ -74,12 +71,12 @@
         <button class="btn btn-ghost" id="batchNotify" type="button" aria-pressed="false">Notify me when done</button>
         <button class="btn btn-ghost" id="batchAdd" type="button">Add more photos</button>
         <button class="btn btn-ghost" id="batchFolder" type="button">Save to a folder</button>
-        <button class="btn btn-primary" id="batchZip" type="button" disabled>Download all as .zip</button>
       </div>
     </div>
     <div class="bmeter" role="progressbar" aria-valuemin="0" aria-valuemax="100" id="bmeter"><i id="batchFill"></i></div>
     <p class="batch-line" id="batchLine" aria-live="off"></p>
     <div class="bgrid" id="batchGrid"></div>
+    <div class="batch-zip"><button class="btn btn-primary" id="batchZip" type="button" disabled>Download all as .zip</button></div>
   </section>
   <section class="workspace" aria-label="Editor">
     <div class="app">
@@ -116,10 +113,8 @@
           <button class="btn btn-primary" id="pickBtn2" type="button">Add images</button>
           <div class="samples" role="group" aria-label="Sample photos">
             <span class="hint">Or try one:</span>
-            <button class="sample" type="button" data-src="sample/kitten-basket.jpg" data-name="kitten-basket.jpg" aria-label="Try the photo of a kitten in a basket"><img src="sample/thumb-kitten-basket.jpg" alt="" width="44" height="44"></button>
-            <button class="sample" type="button" data-src="sample/kitten-sofa.jpg" data-name="kitten-sofa.jpg" aria-label="Try the photo of a kitten on a sofa"><img src="sample/thumb-kitten-sofa.jpg" alt="" width="44" height="44"></button>
-            <button class="sample" type="button" data-src="sample/kitten-bench.jpg" data-name="kitten-bench.jpg" aria-label="Try the photo of a kitten on a bench"><img src="sample/thumb-kitten-bench.jpg" alt="" width="44" height="44"></button>
-          </div>
+            <button class="sample" type="button" data-src="sample/ragdoll-kitten.jpg" data-name="ragdoll-kitten.jpg" aria-label="Try the photo of a ragdoll kitten"><img src="sample/thumb-ragdoll-kitten.jpg" alt="" width="44" height="44"></button>
+</div>
         </div>
         <input type="file" id="fileInput" accept="image/*" multiple class="sr">
       </div>
@@ -127,7 +122,6 @@
       <aside class="rail">
         <div class="panel" id="methodPanel">
           <h2>Cutout not right?</h2>
-          <p class="fix-hint" id="methodHint">Try another way. Each runs the model differently, and you can switch back at any time.</p>
           <div class="methods" role="group" aria-label="Cutout method">
             <button class="method" type="button" data-method="standard" aria-pressed="true" disabled><b>Standard</b><span>The first try</span></button>
             <button class="method" type="button" data-method="keep" aria-pressed="false" disabled><b>Keep proportions</b><span>For very wide or tall photos</span></button>
@@ -161,8 +155,8 @@
           <div class="field">
             <span class="label">Preview on</span>
             <div class="seg" style="--n:2" role="radiogroup" aria-label="Preview backdrop">
-              <input type="radio" name="backdrop" id="bdMat" value="mat" checked><label for="bdMat">Dark</label>
-              <input type="radio" name="backdrop" id="bdChecker" value="checker"><label for="bdChecker">Checkerboard</label>
+              <input type="radio" name="backdrop" id="bdMat" value="mat"><label for="bdMat">Dark</label>
+              <input type="radio" name="backdrop" id="bdChecker" value="checker" checked><label for="bdChecker">Checkerboard</label>
             </div>
           </div>
           <div class="field">

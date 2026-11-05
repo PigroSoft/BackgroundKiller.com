@@ -364,3 +364,6 @@ body.batch-view.working .workspace { display: none; }
 @keyframes pulse { 50% { opacity: .35; } }
 @media (max-width: 760px) { .bgrid { grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; } .batch-actions { width: 100%; } .batch-actions .btn { flex: 1; } }
 .site-footer .copy .sep { opacity: .5; margin: 0 4px; }
+
+.batch-zip { display: flex; justify-content: center; margin-top: 22px; }
+@media (min-width: 881px) { .app > .mat { position: sticky; top: 16px; } }

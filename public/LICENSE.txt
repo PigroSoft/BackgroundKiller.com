@@ -6,10 +6,12 @@ CSS, JavaScript and scripts written for Background Killer.
 
 What it does not cover: the name "Background Killer", the logo and icons
 (public/favicon.png, public/apple-touch-icon.png, public/og.jpg), the Claw
-artwork and the other images in public/assets/, the sample photos in
-public/sample/, the screenshot in docs/, and the third-party files listed
+artwork and the other images in public/assets/, the screenshot in docs/, and the third-party files listed
 below. All rights in the name,
-logo, artwork and sample photos stay with Pigrosoft. Third-party files keep
+logo and artwork stay with Pigrosoft. The sample photo in public/sample/ is by
+Arjunmz under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), from
+https://commons.wikimedia.org/wiki/File:Ragdoll_kitten_on_the_prowl_2017_(cropped_2022).jpg ,
+cropped and resized. Third-party files keep
 their own licences, which are in public/licenses/.
 
 Third-party files: the ISNet model (Apache-2.0) in public/model/, ONNX Runtime

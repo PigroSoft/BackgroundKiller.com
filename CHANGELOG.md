@@ -2,6 +2,13 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.2, 6 November 2026
+
+- Finer cutouts: wisps of fur and hair now survive, especially against plain backgrounds.
+- The preview now sits on a transparent checkerboard by default. Downloads were always transparent.
+- One real sample photo (a ragdoll kitten, CC BY 4.0) replaces the generated ones.
+- The batch zip button moved below the photos, and the preview stays in view while you scroll the controls.
+
 ## 1.0.1, 5 November 2026
 
 - The source code is now public on GitHub under the MIT licence, linked from the footer and the About page.

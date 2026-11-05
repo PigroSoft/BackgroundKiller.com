@@ -8,7 +8,7 @@
 
   var items = [], current = null, nextId = 1, viewBox = null;
   var WORK = 1800;
-  var opts = { backdrop: 'mat', refine: true, bg: 'none', edge: 45, trim: true, pad: 2, fmt: 'png', tool: 'none', brush: 40 };
+  var opts = { backdrop: 'checker', refine: true, bg: 'none', edge: 45, trim: true, pad: 2, fmt: 'png', tool: 'none', brush: 40 };
   var downloadsP = (window.claude && window.claude.use) ? window.claude.use('downloads').catch(function () { return null; }) : Promise.resolve(null);
 
   /* ---------- UI helpers ---------- */
@@ -441,8 +441,9 @@
     var key = opts.edge + (opts.refine && it.matte ? 'r' : 'p');
     if (it._mc && it._mcKey === key) return it._mc;
     if (opts.refine && it.matte) {
-      var m2 = it.matte, k = 1 + (opts.edge / 100) * 3.2, t2 = new Uint8ClampedArray(256);
-      for (var q = 0; q < 256; q++) { var v2 = (q / 255 - 0.5) * k + 0.5; t2[q] = Math.max(0, Math.min(1, v2)) * 255; }
+      var m2 = it.matte, e2 = opts.edge / 100, lo2 = e2 * 0.08, hi2 = 1 - e2 * 0.1, t2 = new Uint8ClampedArray(256);
+      // Keep faint wisps of fur: only trim the very bottom and top of the range, never the middle.
+      for (var q = 0; q < 256; q++) { var v2 = (q / 255 - lo2) / (hi2 - lo2); t2[q] = Math.max(0, Math.min(1, v2)) * 255; }
       var c2 = newCanvas(m2.w, m2.h), x2 = c2.getContext('2d'), id2 = x2.createImageData(m2.w, m2.h), d2 = id2.data;
       for (var i2 = 0, j2 = 3; i2 < m2.alpha.length; i2++, j2 += 4) d2[j2] = t2[m2.alpha[i2]];
       x2.putImageData(id2, 0, 0); it._mc = c2; it._mcKey = key; return c2;

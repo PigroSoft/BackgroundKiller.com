@@ -13,7 +13,7 @@ A free background remover that runs entirely in your browser. There is no server
 - Fonts (Anton, Inter), JSZip and the runtime are all self-hosted, so the page makes no third-party requests.
 
 ## Licence
-The code is MIT licensed, see `LICENSE`. The licence does not cover the name, logo, Claw artwork, other images in `public/assets/` or the sample photos. The model, runtime, JSZip and fonts keep their own licences in `public/licenses/`.
+The code is MIT licensed, see `LICENSE`. The licence does not cover the name, logo, Claw artwork, or other images in `public/assets/`. The sample photo of a ragdoll kitten is by Arjunmz, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ragdoll_kitten_on_the_prowl_2017_(cropped_2022).jpg). The model, runtime, JSZip and fonts keep their own licences in `public/licenses/`.
 
 If you fork this and publish your own copy, use your own name and artwork, and replace the imprint, privacy and terms pages with your own details.
 
