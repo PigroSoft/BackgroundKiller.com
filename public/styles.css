@@ -97,7 +97,7 @@ body::after {
 body.dragging .upload-card { background: #293338; border-color: #f17b6f; outline: 3px dashed #f17b6f; outline-offset: 6px; }
 .upload-card .drop { margin: 14px 0 0; font-size: 17px; font-weight: 500; }
 .upload-card small { color: #b3babd; font-size: 13px; }
-.upload-card .free { margin-top: 12px; font-size: 13px; color: #c3cac9; }
+.upload-card .free { margin: 12px 0 0; font-size: 17px; font-weight: 500; color: #f3f1ec; }
 .sample-row { width: fit-content; margin-left: auto; margin-right: auto; padding: 8px 14px; border-radius: 14px; background: #101213d9; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 18px; font-size: 13px; color: #c6cbc9; }
 .sample { width: 44px; height: 44px; padding: 0; border-radius: 10px; border: 2px solid #ffffff3a; background: var(--surface); overflow: hidden; }
 .sample:hover { border-color: var(--red); }
@@ -275,7 +275,7 @@ input[type="range"]:disabled { opacity: .45; }
 .page p, .page li { color: #d0d2cf; }
 
 /* pro tip, footer, article pages */
-.protip { margin: 14px 0 0; font-size: 14px; color: #c3cac9; line-height: 1.5; }
+.protip { margin: 26px 0 0; font-size: 14px; color: #c3cac9; line-height: 1.5; }
 .protip b { color: var(--text, #f3f1ec); }
 .protip kbd { font: 600 12px/1 var(--body, inherit); padding: 3px 6px; border: 1px solid var(--line); border-bottom-width: 2px; border-radius: 5px; background: var(--panel); color: #f3f1ec; white-space: nowrap; }
 body.working .protip { display: none; }

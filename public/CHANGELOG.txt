@@ -2,6 +2,10 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.6, 6 November 2026
+
+- Home page: "Free, with no sign-up" is as big as the line above it, the pro tip has more room, and the Questions intro is now a film noir detective's take on it being too good to be true.
+
 ## 1.0.5, 6 November 2026
 
 - Home page: the pro tip now sits inside the upload card, and the sample photo row has a dark backing so it can be read.
