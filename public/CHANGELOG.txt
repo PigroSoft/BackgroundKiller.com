@@ -2,6 +2,10 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.3, 6 November 2026
+
+- Faint smears of motion blur far from the subject are now dropped, so stray streaks no longer hang off tails and ears.
+
 ## 1.0.2, 6 November 2026
 
 - Finer cutouts: wisps of fur and hair now survive, especially against plain backgrounds.

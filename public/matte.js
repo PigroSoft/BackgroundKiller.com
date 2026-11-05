@@ -108,7 +108,7 @@
     return { w: w, h: h, alpha: alpha, fg: fg };
   }
   // ---- Unmixing result (used where the background is smooth) ----
-  var TUNE = { tau: 0.05, rOut: 0.03, rIn: 0.006, iters: 3, toe: 0.03, pf: 3, pb: 2, smooth: 1, kv: 15, vlo: 0.003, vhi: 0.012, hiT: 0.5 };
+  var TUNE = { tau: 0.05, rOut: 0.03, rIn: 0.006, iters: 3, toe: 0.03, pf: 3, pb: 2, smooth: 1, kv: 15, vlo: 0.003, vhi: 0.012, hiT: 0.5, rP: 0.012, pLo: 0.02, pHi: 0.2 };
   /* rgba: Uint8ClampedArray w*h*4 of the photo at working size. p: Float32Array w*h, mask 0..1 at the same size.
      Returns { w, h, alpha: Uint8ClampedArray, fg: Uint8ClampedArray (RGBA, A = where to use the cleaned color) }. */
   function refineNew(rgba, p, w, h, opts) {
@@ -136,6 +136,8 @@
       else if (dl[i] < 0.0003) { state[i] = 2; A[i] = 0; }
       else A[i] = q[i];
     }
+    // How close is each pixel to the model's mask? Faint smears far from it are background, not fur.
+    var near = blur(midM, Math.max(3, Math.round(big * T.rP)));
     er = null; dl = null; hiM = null; midM = null;
     // 2. Unmix: estimate local foreground and background colors, then solve alpha per pixel.
     var radii = [Math.round(big * 0.04), Math.round(big * 0.012), Math.round(big * 0.005)].slice(0, T.iters);
@@ -183,7 +185,10 @@
     for (i = 0; i < n; i++) {
       var v = A[i];
       if (state[i] === 2) v = 0; else if (state[i] === 1) v = 1;
-      else { v = (v - toe) / (1 - toe); v = v < 0 ? 0 : v > 1 ? 1 : v; }
+      else {
+        v = (v - toe) / (1 - toe); v = v < 0 ? 0 : v > 1 ? 1 : v;
+        var nr = near[i]; if (nr < T.pHi) v *= nr <= T.pLo ? 0 : (nr - T.pLo) / (T.pHi - T.pLo);
+      }
       A[i] = v; alpha[i] = v * 255 + 0.5;
     }
     // 4. Clean foreground colors. Take the color of the subject from pixels that are clearly subject, spread it out to
