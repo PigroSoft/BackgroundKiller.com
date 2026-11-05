@@ -24,7 +24,7 @@ FOOTER = """<footer class="site-footer">
   </div>
   <nav class="footer-col" aria-label="Guides"><h2>Guides</h2>%s</nav>
   <nav class="footer-col" aria-label="About and legal"><h2>About and legal</h2>%s</nav>
-  <p class="copy">&copy; 2026 <a href="https://pigrosoft.com/">Pigrosoft</a>, Berlin <span class="sep">&middot;</span> <a id="bkVersion" href="/CHANGELOG.txt">Version</a></p>
+  <p class="copy">&copy; 2026 <a href="https://pigrosoft.com/">Pigrosoft</a> <span class="sep">&middot;</span> <a id="bkVersion" href="/CHANGELOG.txt">Version</a></p>
   <script src="/version.js"></script>
 </footer>""" % (
     "".join('<a href="%s">%s</a>' % g for g in GUIDES),
