@@ -2,6 +2,10 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.10, 6 November 2026
+
+- Phones and tablets: Claw floats behind the top of the upload card, and the intro text sits below the card.
+
 ## 1.0.9, 6 November 2026
 
 - Home page: the ragged corner of the photo at the top left now sits on black instead of the checkerboard, which starts where the paper is cut.
