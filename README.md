@@ -10,7 +10,7 @@ A free background remover that runs entirely in your browser. There is no server
 - `public/` is the whole site. Plain HTML, CSS and JavaScript, no build step.
 - The cutout model (ISNet general-use, Apache-2.0, 8-bit quantized, 46 MB) lives in `public/model/` as four chunks named `.wasm` so any static host serves them. The browser reassembles them and caches the result with the Cache API.
 - ONNX Runtime Web 1.20.1 (`public/ort/`) runs the model in a Web Worker (`worker.js`, `engine.js`).
-- Fonts (Anton, Inter), JSZip and the runtime are all self-hosted, so the page makes no third-party requests.
+- Fonts (Anton, Inter), JSZip and the runtime are all self-hosted, so the page makes no third-party requests. Its only other request goes to our own visit counter at stats.pigrosoft.com (cookieless, nothing stored about the visitor, nothing from your photos).
 
 ## Licence
 The code is MIT licensed, see `LICENSE`. The licence does not cover the name, logo, Claw artwork, or other images in `public/assets/`. The sample photo of a ragdoll kitten is by Arjunmz, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ragdoll_kitten_on_the_prowl_2017_(cropped_2022).jpg). The model, runtime, JSZip and fonts keep their own licences in `public/licenses/`.
@@ -18,7 +18,7 @@ The code is MIT licensed, see `LICENSE`. The licence does not cover the name, lo
 If you fork this and publish your own copy, use your own name and artwork, and replace the imprint, privacy and terms pages with your own details.
 
 ## Contributing
-Bug reports and pull requests are welcome, and the site should stay free of servers, uploads and third-party requests. For anything else, write to support@pigrosoft.com.
+Bug reports and pull requests are welcome, and the site should stay free of servers, uploads and third-party requests (the one small request to our own counter is the exception). For anything else, write to support@pigrosoft.com.
 
 ## Version
 Edit `public/version.js` (version and date, shown in every footer), then add an entry to `CHANGELOG.md` and copy it to `public/CHANGELOG.txt`.

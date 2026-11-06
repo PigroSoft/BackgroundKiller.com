@@ -6,7 +6,7 @@ import json, re, pathlib
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent / "public"
 SITE = "https://backgroundkiller.com"
-UPDATED = "4 November 2026"
+UPDATED = "6 November 2026"
 
 # ---------------------------------------------------------------- shared pieces
 GUIDES = [
@@ -26,6 +26,7 @@ FOOTER = """<footer class="site-footer">
   <nav class="footer-col" aria-label="About and legal"><h2>About and legal</h2>%s</nav>
   <p class="copy">&copy; 2026 <a href="https://pigrosoft.com/">Pigrosoft</a> <span class="sep">&middot;</span> <a id="bkVersion" href="/CHANGELOG.txt">Version</a></p>
   <script src="/version.js"></script>
+  <script src="https://stats.pigrosoft.com/c.js" defer></script>
 </footer>""" % (
     "".join('<a href="%s">%s</a>' % g for g in GUIDES),
     "".join('<a href="%s">%s</a>' % g for g in LEGAL),
@@ -313,19 +314,21 @@ page("/privacy",
 <h2>Controller</h2>
 <p>Jeffrey Humble (Pigrosoft), Peschkestr. 5, 12161 Berlin, Germany. Email: <a href="mailto:support@pigrosoft.com">support@pigrosoft.com</a>. See also the <a href="/imprint">imprint</a>.</p>
 <h2>The short version</h2>
-<p>Background Killer removes backgrounds inside your browser. The photos you add are processed on your own device and are not uploaded to us or to anyone else. The site has no accounts, no cookies, no analytics and no tracking.</p>
+<p>Background Killer removes backgrounds inside your browser. The photos you add are processed on your own device and are not uploaded to us or to anyone else. The site has no accounts and sets no cookies. It counts visits with a small counter of our own that stores nothing about you, described under &ldquo;Visit counter&rdquo; below.</p>
 <h2>Your photos</h2>
 <p>When you add an image, your browser reads it and the cutout model runs on your device. The image, the cutout and your edits stay in your browser's memory and are gone when you close or reload the page, unless you download them. We never receive them.</p>
 <h2>What the page downloads</h2>
 <p>The first time you visit, the page downloads the cutout model (about 46 MB) from this site and saves it in your browser's cache. After that it loads from the cache and the page needs no download for it. Besides the model, the page loads its own text, fonts, images and scripts from this site. Every one of these is a plain request for a file. No request carries your photo or anything made from it.</p>
 <h2>Data stored on your device</h2>
 <p>The model is kept in your browser's cache so it only has to download once. This is needed to provide the function you asked for, and it contains no personal information. If you switch on "Notify me when done", the page also saves that choice in your browser's local storage. You can remove both at any time by clearing the site's data in your browser settings. We do not set cookies.</p>
+<h2>Visit counter</h2>
+<p>To know roughly how many people use the site, we count visits with a small counter that we built ourselves and run on Cloudflare, the same host that delivers this site. It takes the place of the usual analytics services, so your browser does not contact Google, Meta or any other analytics company. When a page loads, your browser sends one small request to stats.pigrosoft.com with the address of the page and, if your browser shares it, the name of the website that sent you (the hostname only, never a full address). The counter mixes your IP address and browser type with the site name and a secret code that is replaced every day, and keeps only the result, so that you are not counted twice on the same day. It then adds one to that day&rsquo;s totals for the site, the page and the referring website. Your IP address is not stored, no cookies are set, nothing is saved in your browser, and the day&rsquo;s results and secret code are deleted when the next day starts. The daily totals cannot be tied to a person, and no photo or anything made from it is ever part of this request. Cloudflare processes the request as our host, as described below. The legal basis is Art. 6(1)(f) GDPR, our interest in knowing how many people use the site. You can object at any time by emailing us.</p>
 <h2 id="check">How to check this yourself</h2>
-<p>Open your browser's developer tools (F12, or Cmd+Option+I on a Mac) and go to the Network tab. Drop in a photo and watch the list. You will see no upload: only GET requests for files from backgroundkiller.com, and once the model has loaded the page makes no more requests. Switch the browser to offline mode once the page has loaded, and the tool keeps working.</p>
+<p>Open your browser's developer tools (F12, or Cmd+Option+I on a Mac) and go to the Network tab. Drop in a photo and watch the list. You will see no upload: only GET requests for files from backgroundkiller.com, plus one small request to stats.pigrosoft.com, our own counter, when the page opens. Once the model has loaded, the page makes no more requests. Switch the browser to offline mode once the page has loaded, and the tool keeps working.</p>
 <h2>Hosting and server logs</h2>
 <p>The site is delivered by Cloudflare, Inc. (USA). When you open a page, your browser sends a request that includes your IP address, the time, the page requested and technical details such as your browser type. Cloudflare processes this data to deliver the site and keep it secure, and may keep it in server logs. We do not run our own logs. These requests never contain your photos. The legal basis is Art. 6(1)(f) GDPR, our interest in a secure and reliable website. Where data is transferred to the United States, this relies on the safeguards described in Cloudflare's data processing terms, such as the EU-US Data Privacy Framework and standard contractual clauses. Cloudflare's own privacy policy applies as well.</p>
 <h2>Fonts and other resources</h2>
-<p>Fonts, scripts and images are served from this site itself. Your browser does not contact Google or other third parties to display it.</p>
+<p>Fonts, scripts and images are served from this site itself. Your browser does not contact Google or other third parties to display it. The only other address the page contacts is stats.pigrosoft.com, our own counter, described above.</p>
 <h2>Contacting us</h2>
 <p>If you email us, we use your message and address only to reply and keep them as long as needed for that purpose. The legal basis is Art. 6(1)(f) GDPR, or Art. 6(1)(b) if your message relates to a contract.</p>
 <h2>Your rights</h2>
@@ -337,19 +340,21 @@ page("/privacy",
 <h3>Verantwortlicher</h3>
 <p>Jeffrey Humble (Pigrosoft), Peschkestr. 5, 12161 Berlin, Deutschland. E-Mail: <a href="mailto:support@pigrosoft.com">support@pigrosoft.com</a>. Siehe auch das <a href="/imprint#de">Impressum</a>.</p>
 <h3>Kurzfassung</h3>
-<p>Background Killer entfernt Hintergr&uuml;nde direkt in Ihrem Browser. Die Bilder, die Sie hinzuf&uuml;gen, werden auf Ihrem eigenen Ger&auml;t verarbeitet und nicht an uns oder Dritte hochgeladen. Die Website hat derzeit keine Benutzerkonten, keine Cookies, keine Analyse und kein Tracking.</p>
+<p>Background Killer entfernt Hintergr&uuml;nde direkt in Ihrem Browser. Die Bilder, die Sie hinzuf&uuml;gen, werden auf Ihrem eigenen Ger&auml;t verarbeitet und nicht an uns oder Dritte hochgeladen. Die Website hat keine Benutzerkonten und setzt keine Cookies. Sie z&auml;hlt Besuche mit einem kleinen eigenen Z&auml;hler, der nichts &uuml;ber Sie speichert, siehe &bdquo;Besucherz&auml;hler&ldquo; unten.</p>
 <h3>Ihre Fotos</h3>
 <p>Wenn Sie ein Bild hinzuf&uuml;gen, liest Ihr Browser es ein, und das Modell zum Freistellen l&auml;uft auf Ihrem Ger&auml;t. Bild, Freisteller und Ihre Bearbeitungen bleiben im Arbeitsspeicher Ihres Browsers und sind weg, sobald Sie die Seite schlie&szlig;en oder neu laden, sofern Sie sie nicht herunterladen. Wir erhalten sie nie.</p>
 <h3>Was die Seite herunterl&auml;dt</h3>
 <p>Beim ersten Besuch l&auml;dt die Seite das Modell (etwa 46 MB) von dieser Website herunter und speichert es im Cache Ihres Browsers. Danach wird es aus dem Cache geladen. Au&szlig;erdem l&auml;dt die Seite ihre eigenen Texte, Schriften, Bilder und Skripte von dieser Website. Jede dieser Anfragen ist eine einfache Anfrage nach einer Datei. Keine Anfrage enth&auml;lt Ihr Foto oder etwas, das daraus erzeugt wurde.</p>
 <h3>Auf Ihrem Ger&auml;t gespeicherte Daten</h3>
 <p>Das Modell liegt im Cache Ihres Browsers, damit es nur einmal geladen werden muss. Das ist f&uuml;r die von Ihnen gew&uuml;nschte Funktion erforderlich und enth&auml;lt keine personenbezogenen Daten. Wenn Sie &bdquo;Benachrichtigen, wenn fertig&ldquo; einschalten, speichert die Seite diese Wahl zus&auml;tzlich im lokalen Speicher Ihres Browsers. Sie k&ouml;nnen beides jederzeit entfernen, indem Sie die Websitedaten in den Browsereinstellungen l&ouml;schen. Wir setzen keine Cookies.</p>
+<h3>Besucherz&auml;hler</h3>
+<p>Um ungef&auml;hr zu wissen, wie viele Menschen die Website nutzen, z&auml;hlen wir Besuche mit einem kleinen Z&auml;hler, den wir selbst gebaut haben und bei Cloudflare betreiben, dem Hoster, der auch diese Website ausliefert. Er ersetzt die &uuml;blichen Analysedienste, daher nimmt Ihr Browser keinen Kontakt zu Google, Meta oder einem anderen Analyseanbieter auf. Beim Laden einer Seite sendet Ihr Browser eine kleine Anfrage an stats.pigrosoft.com mit der Adresse der Seite und, sofern Ihr Browser ihn mitsendet, dem Namen der Website, von der Sie kommen (nur der Hostname, nie die vollst&auml;ndige Adresse). Der Z&auml;hler vermischt Ihre IP-Adresse und Ihren Browsertyp mit dem Namen der Website und einem geheimen Code, der jeden Tag ersetzt wird, und beh&auml;lt nur das Ergebnis, damit Sie am selben Tag nicht doppelt gez&auml;hlt werden. Anschlie&szlig;end erh&ouml;ht er die Tageszahlen f&uuml;r die Website, die Seite und die verweisende Website um eins. Ihre IP-Adresse wird nicht gespeichert, es werden keine Cookies gesetzt, nichts wird in Ihrem Browser abgelegt, und die Ergebnisse und der geheime Code des Tages werden gel&ouml;scht, sobald der n&auml;chste Tag beginnt. Die Tageszahlen lassen sich keiner Person zuordnen, und kein Foto und nichts, das daraus erzeugt wurde, ist jemals Teil dieser Anfrage. Cloudflare verarbeitet die Anfrage als unser Hoster, wie unten beschrieben. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO, unser Interesse daran zu wissen, wie viele Menschen die Website nutzen. Sie k&ouml;nnen jederzeit per E-Mail widersprechen.</p>
 <h3 id="pruefen">So pr&uuml;fen Sie es selbst</h3>
-<p>&Ouml;ffnen Sie die Entwicklerwerkzeuge Ihres Browsers (F12, am Mac Cmd+Option+I) und gehen Sie zum Tab &bdquo;Netzwerk&ldquo;. Ziehen Sie ein Foto auf die Seite und beobachten Sie die Liste. Sie sehen keinen Upload, nur GET-Anfragen nach Dateien von backgroundkiller.com, und nach dem Laden des Modells macht die Seite keine weiteren Anfragen. Schalten Sie den Browser nach dem Laden der Seite offline, und das Werkzeug arbeitet weiter.</p>
+<p>&Ouml;ffnen Sie die Entwicklerwerkzeuge Ihres Browsers (F12, am Mac Cmd+Option+I) und gehen Sie zum Tab &bdquo;Netzwerk&ldquo;. Ziehen Sie ein Foto auf die Seite und beobachten Sie die Liste. Sie sehen keinen Upload, nur GET-Anfragen nach Dateien von backgroundkiller.com und beim &Ouml;ffnen der Seite eine kleine Anfrage an stats.pigrosoft.com, unseren eigenen Z&auml;hler. Nach dem Laden des Modells macht die Seite keine weiteren Anfragen. Schalten Sie den Browser nach dem Laden der Seite offline, und das Werkzeug arbeitet weiter.</p>
 <h3>Hosting und Server-Logs</h3>
 <p>Die Website wird von Cloudflare, Inc. (USA) ausgeliefert. Beim Aufruf einer Seite sendet Ihr Browser eine Anfrage, die Ihre IP-Adresse, die Uhrzeit, die angeforderte Seite und technische Angaben wie den Browsertyp enth&auml;lt. Cloudflare verarbeitet diese Daten, um die Website auszuliefern und abzusichern, und speichert sie gegebenenfalls in Server-Logs. Wir f&uuml;hren keine eigenen Logs. Diese Anfragen enthalten nie Ihre Fotos. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO, unser Interesse an einer sicheren und zuverl&auml;ssigen Website. Soweit Daten in die USA &uuml;bermittelt werden, beruht dies auf den Garantien aus den Datenverarbeitungsbedingungen von Cloudflare, etwa dem EU-US Data Privacy Framework und Standardvertragsklauseln. Es gilt zus&auml;tzlich die Datenschutzerkl&auml;rung von Cloudflare.</p>
 <h3>Schriften und andere Ressourcen</h3>
-<p>Schriften, Skripte und Bilder werden von dieser Website selbst ausgeliefert. Ihr Browser nimmt dazu keinen Kontakt zu Google oder anderen Dritten auf.</p>
+<p>Schriften, Skripte und Bilder werden von dieser Website selbst ausgeliefert. Ihr Browser nimmt dazu keinen Kontakt zu Google oder anderen Dritten auf. Die einzige weitere Adresse, die die Seite kontaktiert, ist stats.pigrosoft.com, unser eigener Z&auml;hler, siehe oben.</p>
 <h3>Kontakt</h3>
 <p>Wenn Sie uns eine E-Mail schreiben, verwenden wir Ihre Nachricht und Adresse nur, um zu antworten, und speichern sie so lange, wie es daf&uuml;r erforderlich ist. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO, bei vertragsbezogenen Anfragen Art. 6 Abs. 1 lit. b DSGVO.</p>
 <h3>Ihre Rechte</h3>
