@@ -2,6 +2,10 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.11, 6 November 2026
+
+- Phones and tablets: more of Claw shows above the upload card, so his claws are in view.
+
 ## 1.0.10, 6 November 2026
 
 - Phones and tablets: Claw floats behind the top of the upload card, and the intro text sits below the card.
