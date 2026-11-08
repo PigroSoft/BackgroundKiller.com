@@ -383,3 +383,8 @@ body.batch-view.working .workspace { display: none; }
   .hero .lede { order: 6; max-width: 440px; margin: 26px auto 0; text-align: center; }
 }
 @keyframes claw-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+
+/* Footer: a GitHub star button under the tagline. */
+.star-btn { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 7px 14px; border-radius: 999px; border: 1px solid #ffffff3a; background: #ffffff12; color: #f3f1ec; font: 500 14px/1 var(--body, inherit); text-decoration: none; }
+.star-btn:hover { background: #ffffff22; color: #fff; }
+.star-btn svg { color: #f2c200; }
