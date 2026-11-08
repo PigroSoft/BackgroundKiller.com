@@ -2,6 +2,10 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.13, 8 November 2026
+
+- The footer shows the running total of visits, read from the same cookieless counter. Privacy page updated to describe the second request.
+
 ## 1.0.12, 8 November 2026
 
 - The footer has a "Star on GitHub" button in place of the Source code link. The About page still links to the code.
