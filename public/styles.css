@@ -388,7 +388,3 @@ body.batch-view.working .workspace { display: none; }
 .star-btn { display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 7px 14px; border-radius: 999px; border: 1px solid #ffffff3a; background: #ffffff12; color: #f3f1ec; font: 500 14px/1 var(--body, inherit); text-decoration: none; }
 .star-btn:hover { background: #ffffff22; color: #fff; }
 .star-btn svg { color: #f2c200; }
-
-/* Footer: the visit total, filled in by the stats script. The label comes from CSS so the script can overwrite the number. */
-.site-footer .visits::before { content: "\00b7"; opacity: .5; margin: 0 6px; }
-.site-footer .visits::after { content: " visits"; }
