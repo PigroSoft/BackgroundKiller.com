@@ -35,7 +35,6 @@ FOOTER = """<footer class="site-footer">
 
 HEADER = """<header class="site-header" style="border-bottom:1px solid var(--line)">
   <a class="logo" href="/" aria-label="Background Killer home">
-    <img class="brand-logo" src="/assets/avatar.webp" alt="" width="52" height="52">
     <span class="wordmark">Background<b>Killer</b><small>.com</small></span>
   </a>
 </header>"""

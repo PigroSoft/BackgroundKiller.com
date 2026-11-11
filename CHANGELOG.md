@@ -2,6 +2,11 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.13, 11 November 2026
+
+- The header shows just the Background Killer wordmark, without the round cat logo.
+- New favicon and home screen icon: a BK in the wordmark's style.
+
 ## 1.0.12, 8 November 2026
 
 - The footer has a "Star on GitHub" button in place of the Source code link. The About page still links to the code.
