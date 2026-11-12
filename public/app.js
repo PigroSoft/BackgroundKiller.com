@@ -653,6 +653,8 @@
     if (view === 'batch' && !items.length) setView('editor');
     renderTray(); updateButtons();
   }
+  var lockupInView = true;
+  if ('IntersectionObserver' in window) new IntersectionObserver(function (es) { lockupInView = es[0].isIntersecting; updateButtons(); }, { threshold: 0.2 }).observe($('lockup'));
   function updateButtons() {
     var it = current, ok = !!(it && it.status === 'done');
     var size = ok ? (function () { var b = cropBox(it); return fmtPx(Math.round(b.w), Math.round(b.h)); })() : '';
@@ -660,7 +662,13 @@
       var el = $(p[0]); el.disabled = !ok; el.innerHTML = p[1] + (size ? '<small>' + size + '</small>' : '');
     });
     $('copyOne').disabled = !ok; $('copyOneM').disabled = !ok;
-    $('actionbar').hidden = !ok;
+    $('actionbar').hidden = !ok || lockupInView;
+    /* Say plainly which mode the editor is in, so it reads as an edit screen once the cutout is ready. */
+    var mode = !ok ? 'cutting' : opts.tool === 'erase' ? 'erase' : opts.tool === 'restore' ? 'restore' : 'edit';
+    $('mat').dataset.mode = mode;
+    $('modeText').textContent = mode === 'edit' ? 'Edit mode' : mode === 'erase' ? 'Erase brush' : mode === 'restore' ? 'Restore brush' : (it ? label(it.status) : 'Cutting');
+    var note = $('editNote'); note.hidden = !ok;
+    note.textContent = mode === 'erase' ? 'Paint over anything that should go.' : mode === 'restore' ? 'Paint over parts the cutout lost. The faded area shows what was removed.' : 'Cutout ready. Drag the slider to compare, then fix anything it missed.';
     document.body.classList.toggle('working', items.length > 0);
     var nd = items.filter(function (i) { return i.status === 'done'; }).length;
     $('saveAll').disabled = nd < 2; $('saveAll').textContent = nd >= 2 ? 'Download all ' + nd + ' as .zip' : 'Download all as .zip';

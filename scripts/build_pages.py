@@ -96,17 +96,17 @@ FAQ = [
     ("How big can the download be?",
      "It matches your original photo, pixel for pixel. Nothing is scaled down. Very large photos use a lot of memory, so on an older phone a huge image may fail. If that happens, try a smaller version."),
     ("How do I remove the background from a photo?",
-     'Click Upload image, or drop a photo on the page, and wait a moment for the cutout. Then choose a background (transparent, white, black or any color) and press Download full size. <a href="/remove-background-from-image">The full steps are here</a>.'),
+     'Click Upload image, or drop a photo on the page, and wait a moment for the cutout. Then press Download full size. For a white, black or colored background, open Clean getaway and pick one first. <a href="/remove-background-from-image">The full steps are here</a>.'),
     ("Which files work?",
      "JPG, PNG and WebP. HEIC photos work in browsers that can open them, such as Safari. Downloads are PNG or WebP, and both keep transparency."),
     ("What if it misses a spot?",
-     "Open Fix edges, choose Erase to brush away leftovers, or Restore to bring back anything it cut by mistake. Undo is right there."),
+     "Open Sharpen the claws, choose Erase to brush away leftovers, or Restore to bring back anything it cut by mistake. Undo is right there."),
     ("What are the checkerboard squares?",
      "They show transparent areas in the preview. They are not part of the file you download."),
     ("Can I do a lot of photos at once?",
      'Yes. Drop in 20 or more at once, or add more while others are still cutting. The newest opens right away, the rest keep going in the background, and the little previews at the bottom jump between them. When they are done, Download all gives you one zip of full-size cutouts. This is handy for <a href="/product-photo-background-remover">product photos</a>.'),
     ("What if the cutout is wrong?",
-     "Open Cutout not right? and try another way. There are four: keep proportions, zoom in on the subject, double check, and boost contrast. Each runs the model differently, and you can switch back to the first try at any time. Then tidy anything left with Erase and Restore."),
+     "Open Smells fishy? and try another way. There are four: keep proportions, zoom in on the subject, double check, and boost contrast. Each runs the model differently, and you can switch back to the first try at any time. Then tidy anything left with Erase and Restore."),
     ("Who is the cat?",
      "That is Claw. He handles the backgrounds."),
 ]
@@ -162,7 +162,7 @@ page("/remove-bg-alternative",
 <li>Open <a href="/">backgroundkiller.com</a> and click Upload image, or drop a photo on the page.</li>
 <li>Wait for the cutout. The first time takes longer because the model downloads once.</li>
 <li>Tidy the edges with Erase and Restore if you need to.</li>
-<li>Pick a background and press Download full size.</li>
+<li>Open Clean getaway if you want a background, then press Download full size.</li>
 </ol>
 """ + related("/remove-bg-alternative") + "\n" + CTA,
      crumb="Free remove.bg alternative")
@@ -178,8 +178,8 @@ page("/remove-background-from-image",
 <ol>
 <li><strong>Add your photo.</strong> Click Upload image, drag a file onto the page, or paste one with Ctrl+V or &#8984;V. JPG, PNG and WebP work, and HEIC works in browsers that can open it, such as Safari.</li>
 <li><strong>Wait for the cutout.</strong> The first visit downloads the cutout model once, about 46 MB, and then keeps it for next time. After that, each photo takes some seconds, depending on your computer.</li>
-<li><strong>Fix the edges if needed.</strong> In Fix edges, choose Erase to brush away leftover background, or Restore to bring back parts of the subject that were cut by mistake. Change the brush size to suit the detail, and use Undo if you slip.</li>
-<li><strong>Choose a background and download.</strong> Keep it transparent, or choose white, black, red or any color. Press Download full size, or Copy image to paste it straight into another app.</li>
+<li><strong>Fix the edges if needed.</strong> In Sharpen the claws, choose Erase to brush away leftover background, or Restore to bring back parts of the subject that were cut by mistake. Change the brush size to suit the detail, and use Undo if you slip.</li>
+<li><strong>Choose a background and download.</strong> Keep it transparent, or open Clean getaway and choose white, black, red or any color. Press Download full size, or Copy image to paste it straight into another app.</li>
 </ol>
 <h2>Tips for a cleaner cutout</h2>
 <ul>
@@ -213,7 +213,7 @@ page("/make-png-transparent",
 <ol>
 <li>Add your photo on <a href="/">backgroundkiller.com</a>.</li>
 <li>Leave the background set to transparent, which is the checkerboard swatch.</li>
-<li>Choose PNG as the format and press Download full size.</li>
+<li>Open Clean getaway, choose PNG as the format, and press Download full size.</li>
 </ol>
 <p>The checkerboard you see in the preview only marks the empty areas. It is not baked into the file.</p>
 <h2>Check that your file is really transparent</h2>
@@ -240,7 +240,7 @@ page("/product-photo-background-remover",
 <h2>Several photos in five steps</h2>
 <ol>
 <li>Drop in all your photos at once, or add more at any time. They are cut out one after another.</li>
-<li>Click each preview at the bottom to check the result. If one is off, try Cutout not right?, then fix edges with Erase and Restore.</li>
+<li>Click each preview at the bottom to check the result. If one is off, try Smells fishy?, then fix edges with Sharpen the claws.</li>
 <li>Choose the white swatch for a pure white background. Marketplaces such as Amazon ask for pure white on main images, so check the current rules for the one you sell on.</li>
 <li>Keep Trim to the subject switched on and set the same margin for every photo, so the products look consistent.</li>
 <li>Choose PNG or WebP and press Download all as .zip.</li>

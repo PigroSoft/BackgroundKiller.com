@@ -2,6 +2,14 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.15, 13 November 2026
+
+- The editor now says it is in edit mode. Once the cutout is ready, a red frame and an Edit mode tag appear, with a line telling you what to do. They change to Erase brush or Restore brush while a brush is on.
+- Download full size, Copy image and Add image sit together right under the photo, so saving a cutout no longer means scrolling. On phones the bar at the bottom only shows once that row has scrolled out of view.
+- Background, edges, trim and format are folded away in the last panel, and the other panels are tighter.
+- New headings, each with a plain line under it saying what it does: Smells fishy?, Sharpen the claws, Clean getaway and The usual suspects.
+- The sample kitten is no longer offered once you have added a photo.
+
 ## 1.0.14, 13 November 2026
 
 - Photos on a plain white or grey backdrop no longer get faint cloud-like blobs around the subject. The cutout finds the backdrop from the edge of the photo and clears the haze away from the subject.
