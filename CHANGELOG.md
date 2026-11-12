@@ -2,6 +2,10 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.16, 13 November 2026
+
+- The cutout methods heading now reads "Somethin’ fishy?".
+
 ## 1.0.15, 13 November 2026
 
 - The editor now says it is in edit mode. Once the cutout is ready, a red frame and an Edit mode tag appear, with a line telling you what to do. They change to Erase brush or Restore brush while a brush is on.

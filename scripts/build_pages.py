@@ -106,7 +106,7 @@ FAQ = [
     ("Can I do a lot of photos at once?",
      'Yes. Drop in 20 or more at once, or add more while others are still cutting. The newest opens right away, the rest keep going in the background, and the little previews at the bottom jump between them. When they are done, Download all gives you one zip of full-size cutouts. This is handy for <a href="/product-photo-background-remover">product photos</a>.'),
     ("What if the cutout is wrong?",
-     "Open Smells fishy? and try another way. There are four: keep proportions, zoom in on the subject, double check, and boost contrast. Each runs the model differently, and you can switch back to the first try at any time. Then tidy anything left with Erase and Restore."),
+     "Open Somethin’ fishy? and try another way. There are four: keep proportions, zoom in on the subject, double check, and boost contrast. Each runs the model differently, and you can switch back to the first try at any time. Then tidy anything left with Erase and Restore."),
     ("Who is the cat?",
      "That is Claw. He handles the backgrounds."),
 ]
@@ -240,7 +240,7 @@ page("/product-photo-background-remover",
 <h2>Several photos in five steps</h2>
 <ol>
 <li>Drop in all your photos at once, or add more at any time. They are cut out one after another.</li>
-<li>Click each preview at the bottom to check the result. If one is off, try Smells fishy?, then fix edges with Sharpen the claws.</li>
+<li>Click each preview at the bottom to check the result. If one is off, try Somethin’ fishy?, then fix edges with Sharpen the claws.</li>
 <li>Choose the white swatch for a pure white background. Marketplaces such as Amazon ask for pure white on main images, so check the current rules for the one you sell on.</li>
 <li>Keep Trim to the subject switched on and set the same margin for every photo, so the products look consistent.</li>
 <li>Choose PNG or WebP and press Download all as .zip.</li>
