@@ -2,6 +2,12 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.14, 13 November 2026
+
+- Photos on a plain white or grey backdrop no longer get faint cloud-like blobs around the subject. The cutout finds the backdrop from the edge of the photo and clears the haze away from the subject.
+- Small see-through specks that float away from the subject are dropped. Loose hair and fur close to the subject are kept.
+- The crop to the subject now follows the cleaned cutout, so stray haze no longer makes the download bigger than it needs to be.
+
 ## 1.0.13, 11 November 2026
 
 - The header shows just the Background Killer wordmark, without the round cat logo.

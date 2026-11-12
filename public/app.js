@@ -457,13 +457,24 @@
   }
   function baseBounds(it) {
     // Bounding box of the model's mask in mask pixels, cached per edge setting.
-    if (it._bb !== undefined && it._bbKey === opts.edge) return it._bb;
+    var bbKey = opts.edge + (opts.refine && it.matte ? 'r' : 'p');
+    if (it._bb !== undefined && it._bbKey === bbKey) return it._bb;
+    if (opts.refine && it.matte) {
+      /* Use the cleaned matte, so stray haze does not stretch the crop. Matte pixels are scaled back to mask pixels. */
+      var mt = it.matte, ax = mt.w, ay = mt.h, a = mt.alpha, x0 = ax, y0 = ay, x1 = -1, y1 = -1;
+      for (var yy = 0; yy < ay; yy++) for (var xx = 0; xx < ax; xx++) {
+        if (a[yy * ax + xx] > 24) { if (xx < x0) x0 = xx; if (xx > x1) x1 = xx; if (yy < y0) y0 = yy; if (yy > y1) y1 = yy; }
+      }
+      it._bb = x1 < 0 ? null : { minX: Math.floor(x0 * SIZE / ax), minY: Math.floor(y0 * SIZE / ay), maxX: Math.min(SIZE - 1, Math.ceil((x1 + 1) * SIZE / ax) - 1), maxY: Math.min(SIZE - 1, Math.ceil((y1 + 1) * SIZE / ay) - 1) };
+      it._bbKey = bbKey;
+      return it._bb;
+    }
     var m = it.mask, minX = SIZE, minY = SIZE, maxX = -1, maxY = -1, t = lut();
     for (var y = 0; y < SIZE; y++) for (var x = 0; x < SIZE; x++) {
       if (t[m[y * SIZE + x]] > 24) { if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; }
     }
     it._bb = maxX < 0 ? null : { minX: minX, minY: minY, maxX: maxX, maxY: maxY };
-    it._bbKey = opts.edge;
+    it._bbKey = bbKey;
     return it._bb;
   }
   function restoreBounds(it) {

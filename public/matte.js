@@ -276,6 +276,95 @@
     }
     return out;
   }
+  /* Label 8-connected regions of a binary map. Returns { lab: Int32Array (0 = empty), areas: [0, a1, a2, ...] }. */
+  function components(bin, w, h) {
+    var n = w * h, lab = new Int32Array(n), q = new Int32Array(n), areas = [0], id = 0, s, qh, qt, v, x, y, a, dx, dy, nx, ny, u;
+    for (s = 0; s < n; s++) {
+      if (!bin[s] || lab[s]) continue;
+      id++; qh = 0; qt = 0; q[qt++] = s; lab[s] = id; a = 0;
+      while (qh < qt) {
+        v = q[qh++]; a++; x = v % w; y = (v - x) / w;
+        for (dy = -1; dy <= 1; dy++) {
+          ny = y + dy; if (ny < 0 || ny >= h) continue;
+          for (dx = -1; dx <= 1; dx++) {
+            nx = x + dx; if (nx < 0 || nx >= w) continue;
+            u = ny * w + nx;
+            if (bin[u] && !lab[u]) { lab[u] = id; q[qt++] = u; }
+          }
+        }
+      }
+      areas.push(a);
+    }
+    return { lab: lab, areas: areas };
+  }
+  /* Plain backdrops (white sweeps, grey paper) make the model draw faint clouds where it has nothing to look at.
+     If the photo's border is one even color, find the backdrop by flood fill from the border and clear any pixel in it
+     that sits away from what the model is sure about. Pixels near the subject keep their soft edge. */
+  function backdropGuard(rgba, p, alpha, w, h, blur, big) {
+    var n = w * h, i, x, y, tol = 18, ring = [], r = [], g2 = [], b = [];
+    for (x = 0; x < w; x++) { ring.push(x); ring.push((h - 1) * w + x); }
+    for (y = 1; y < h - 1; y++) { ring.push(y * w); ring.push(y * w + w - 1); }
+    for (i = 0; i < ring.length; i++) { var o = ring[i] * 4; r.push(rgba[o]); g2.push(rgba[o + 1]); b.push(rgba[o + 2]); }
+    function med(a) { a.sort(function (m, k) { return m - k; }); return a[a.length >> 1]; }
+    var mr = med(r), mg = med(g2), mb = med(b);
+    function like(k) { var o = k * 4; return Math.max(Math.abs(rgba[o] - mr), Math.abs(rgba[o + 1] - mg), Math.abs(rgba[o + 2] - mb)) <= tol; }
+    var hit = 0; for (i = 0; i < ring.length; i++) if (like(ring[i])) hit++;
+    if (hit < ring.length * 0.6) return false;
+    var seen = new Uint8Array(n), q = new Int32Array(n), qh = 0, qt = 0, v;
+    for (i = 0; i < ring.length; i++) if (!seen[ring[i]] && like(ring[i])) { seen[ring[i]] = 1; q[qt++] = ring[i]; }
+    while (qh < qt) {
+      v = q[qh++]; x = v % w; y = (v - x) / w;
+      if (x > 0 && !seen[v - 1] && like(v - 1)) { seen[v - 1] = 1; q[qt++] = v - 1; }
+      if (x < w - 1 && !seen[v + 1] && like(v + 1)) { seen[v + 1] = 1; q[qt++] = v + 1; }
+      if (y > 0 && !seen[v - w] && like(v - w)) { seen[v - w] = 1; q[qt++] = v - w; }
+      if (y < h - 1 && !seen[v + w] && like(v + w)) { seen[v + w] = 1; q[qt++] = v + w; }
+    }
+    q = null;
+    /* "Sure" means a solid patch of the subject. Lone confident pixels inside the haze do not count. */
+    var hi = new Uint8Array(n), sure = new Float32Array(n), cnt = 0;
+    for (i = 0; i < n; i++) hi[i] = p[i] > 0.9 ? 1 : 0;
+    var cc = components(hi, w, h), top = 0, id;
+    for (id = 1; id < cc.areas.length; id++) if (cc.areas[id] > top) top = cc.areas[id];
+    for (i = 0; i < n; i++) if (cc.lab[i] && cc.areas[cc.lab[i]] >= top * 0.05) { sure[i] = 1; cnt++; }
+    if (cnt < n * 0.005) return false;   // the model found nothing solid: do not risk erasing the subject
+    var near = blur(sure, Math.max(3, Math.round(big * 0.008)));
+    for (i = 0; i < n; i++) {
+      if (!seen[i] || near[i] >= 0.004) continue;
+      var k = (p[i] - 0.85) / 0.12; k = k < 0 ? 0 : k > 1 ? 1 : k;
+      alpha[i] = alpha[i] * k;
+    }
+    return true;
+  }
+  /* Remove small, see-through islands that float away from the subject. Real small parts are solid, and loose hair sits
+     close to the head, but ghosts from the old background are neither. */
+  function dropSpecks(alpha, w, h, blur, span) {
+    var n = w * h, i, bin = new Uint8Array(n);
+    for (i = 0; i < n; i++) bin[i] = alpha[i] > 128 ? 1 : 0;
+    var c = components(bin, w, h), nc = c.areas.length - 1, top = 0, main = 0, sum = new Float64Array(nc + 1), id;
+    for (id = 1; id <= nc; id++) if (c.areas[id] > top) { top = c.areas[id]; main = id; }
+    if (nc < 2) return;
+    for (i = 0; i < n; i++) if (c.lab[i]) sum[c.lab[i]] += alpha[i] / 255;
+    var body = new Float32Array(n);
+    for (i = 0; i < n; i++) body[i] = c.lab[i] === main ? 1 : 0;
+    var near = blur(body, Math.max(6, Math.round(span * 0.04))), tied = new Uint8Array(nc + 1);
+    for (i = 0; i < n; i++) if (c.lab[i] && near[i] > 0.0004) tied[c.lab[i]] = 1;
+    var drop = new Uint8Array(nc + 1), any = false;
+    for (id = 1; id <= nc; id++) if (id !== main && !tied[id] && c.areas[id] < top * 0.05 && sum[id] / c.areas[id] < 0.9) { drop[id] = 1; any = true; }
+    if (!any) return;
+    for (i = 0; i < n; i++) if (c.lab[i] && drop[c.lab[i]]) alpha[i] = 0;
+  }
+  /* Final cleanup on the finished matte. */
+  function tidy(rgba, p, r, w, h) {
+    var blur = Blur(w, h), big = Math.max(w, h);
+    backdropGuard(rgba, p, r.alpha, w, h, blur, big);
+    dropSpecks(r.alpha, w, h, blur, big);
+    // Faint dust far from any solid part of the subject goes too, so it cannot stretch the crop or show as flecks.
+    var n = w * h, solid = new Float32Array(n), i;
+    for (i = 0; i < n; i++) solid[i] = r.alpha[i] > 128 ? 1 : 0;
+    var near = blur(solid, Math.max(6, Math.round(big * 0.03)));
+    for (i = 0; i < n; i++) if (near[i] < 0.0004) r.alpha[i] = 0;
+    return r;
+  }
   /* Only the area around the subject needs work, so cut it out, refine that, and paste the result back. */
   function refine(rgba, p, w, h, opts) {
     p = dropBorderStrips(p, w, h);
@@ -285,7 +374,7 @@
     var m = Math.round(Math.max(w, h) * 0.08);
     x0 = Math.max(0, x0 - m); y0 = Math.max(0, y0 - m); x1 = Math.min(w - 1, x1 + m); y1 = Math.min(h - 1, y1 + m);
     var cw = x1 - x0 + 1, ch = y1 - y0 + 1;
-    if (cw * ch > n * 0.85) return refineFull(rgba, p, w, h, opts);
+    if (cw * ch > n * 0.85) return tidy(rgba, p, refineFull(rgba, p, w, h, opts), w, h);
     var cr = new Uint8ClampedArray(cw * ch * 4), cp = new Float32Array(cw * ch);
     for (y = 0; y < ch; y++) {
       cr.set(rgba.subarray(((y + y0) * w + x0) * 4, ((y + y0) * w + x0 + cw) * 4), y * cw * 4);
@@ -297,7 +386,7 @@
       alpha.set(r.alpha.subarray(y * cw, (y + 1) * cw), (y + y0) * w + x0);
       fg.set(r.fg.subarray(y * cw * 4, (y + 1) * cw * 4), ((y + y0) * w + x0) * 4);
     }
-    return { w: w, h: h, alpha: alpha, fg: fg };
+    return tidy(rgba, p, { w: w, h: h, alpha: alpha, fg: fg }, w, h);
   }
   g.BKMatte = { refine: refine };
 })(self);
