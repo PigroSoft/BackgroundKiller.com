@@ -1,15 +1,27 @@
 # Background Killer
 
-A free background remover that runs entirely in your browser. There is no server and nothing is uploaded, downloads stay at full resolution, and you can cut a whole batch of photos at once and take them as a zip.
+A free background remover that runs entirely in your browser. There is no server and nothing is uploaded: the cutout model runs on your own computer, downloads keep your original resolution, and you can cut out a whole batch of photos at once and take them as a zip. It was built as a free, no sign-up alternative to remove.bg.
 
 **[Use it at backgroundkiller.com](https://backgroundkiller.com)**
 
 ![The Background Killer home page](docs/screenshot.jpg)
 
+## What it does
+- **Cuts out the subject** with the ISNet general-use model, in the browser, with no account, watermark or limit.
+- **Keeps fine detail.** A refinement step in `public/matte.js` turns the model's coarse mask into a real alpha matte at working resolution, so fur, hair and whiskers survive. It snaps the mask to the photo's edges with a guided filter, solves each uncertain pixel by unmixing it into subject and background colour, cleans the colour at the rim so the old background leaves no halo, and drops faint smears that run off the edge of the photo.
+- **Previews on a transparent checkerboard** by default. Switch the preview to a dark mat, and choose a transparent, white, black or custom colour background for the download.
+- **Full-size downloads** as PNG or WebP, matching your original pixels, with an option to trim to the subject. Copy the result to the clipboard in one click.
+- **Batch mode.** Drop in 20 or more photos, keep adding while others are still cutting, then download a zip or save straight to a folder. It can notify you when the batch finishes.
+- **Fixes for tricky photos.** Four other ways to run the model (keep proportions, zoom in on the subject, double check, boost contrast), an edge slider, and Erase and Restore brushes with undo and redo.
+- **Works on phones.** The layout is built for narrow screens as well as desktops.
+
+![Cutting out a sample photo](docs/editor.jpg)
+
 ## How it works
 - `public/` is the whole site. Plain HTML, CSS and JavaScript, no build step.
 - The cutout model (ISNet general-use, Apache-2.0, 8-bit quantized, 46 MB) lives in `public/model/` as four chunks named `.wasm` so any static host serves them. The browser reassembles them and caches the result with the Cache API.
 - ONNX Runtime Web 1.20.1 (`public/ort/`) runs the model in a Web Worker (`worker.js`, `engine.js`).
+- `public/matte.js` does the edge refinement and runs on the main thread after the model returns its mask.
 - Fonts (Anton, Inter), JSZip and the runtime are all self-hosted, so the page makes no third-party requests. Its only other request goes to our own visit counter at stats.pigrosoft.com (cookieless, nothing stored about the visitor, nothing from your photos).
 
 ## Licence

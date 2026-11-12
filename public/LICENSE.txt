@@ -6,7 +6,7 @@ CSS, JavaScript and scripts written for Background Killer.
 
 What it does not cover: the name "Background Killer", the logo and icons
 (public/favicon.png, public/apple-touch-icon.png, public/og.jpg), the Claw
-artwork and the other images in public/assets/, the screenshot in docs/, and the third-party files listed
+artwork and the other images in public/assets/, the screenshots in docs/, and the third-party files listed
 below. All rights in the name,
 logo and artwork stay with Pigrosoft. The sample photo in public/sample/ is by
 Arjunmz under CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/), from
