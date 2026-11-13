@@ -1,5 +1,5 @@
 /* The one place to change the version. Edit these two lines, then add an entry to CHANGELOG.md and public/CHANGELOG.txt. */
-var BK_VERSION = '1.0.17';
+var BK_VERSION = '1.0.18';
 var BK_UPDATED = '2026-11-13';
 
 (function () {

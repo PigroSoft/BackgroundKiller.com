@@ -426,3 +426,6 @@ details.fold[open] > summary::after { content: "\2212"; }
 details.fold > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
 details.fold > summary:hover { background: #ffffff08; }
 .fold-body { display: grid; gap: 16px; padding: 4px 18px 18px; }
+
+.site-footer .footer-brand .made { margin-top: 4px; font-size: 0.9rem; opacity: 0.85; text-shadow: 0 1px 4px #000; }
+.site-footer .footer-brand .made a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
