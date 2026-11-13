@@ -19,7 +19,7 @@ A free background remover that runs entirely in your browser. There is no server
 
 ## How it works
 - `public/` is the whole site. Plain HTML, CSS and JavaScript, no build step.
-- The cutout model (ISNet general-use, Apache-2.0, 8-bit quantized, 46 MB) lives in `public/model/` as four chunks named `.wasm` so any static host serves them. The browser reassembles them and caches the result with the Cache API.
+- The cutout model (ISNet general-use, Apache-2.0, 47 MB, with 8-bit per-channel weights and full-precision maths) lives in `public/model/` as four chunks named `.wasm` so any static host serves them. The browser reassembles them and caches the result with the Cache API.
 - ONNX Runtime Web 1.20.1 (`public/ort/`) runs the model in a Web Worker (`worker.js`, `engine.js`).
 - `public/matte.js` does the edge refinement and runs on the main thread after the model returns its mask.
 - Fonts (Anton, Inter), JSZip and the runtime are all self-hosted, so the page makes no third-party requests. Its only other request goes to our own visit counter at stats.pigrosoft.com (cookieless, nothing stored about the visitor, nothing from your photos).

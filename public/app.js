@@ -1,8 +1,8 @@
 (function () {
   var SIZE = 1024;
   var BASE = new URL('.', location.href).href;
-  var MODEL_PARTS = ['model/isnet_q.part0.wasm', 'model/isnet_q.part1.wasm', 'model/isnet_q.part2.wasm', 'model/isnet_q.part3.wasm'];
-  var MODEL_BYTES = 46360717;
+  var MODEL_PARTS = ['model/isnet_w8.part0.wasm', 'model/isnet_w8.part1.wasm', 'model/isnet_w8.part2.wasm', 'model/isnet_w8.part3.wasm'];
+  var MODEL_BYTES = 46731734;
   var ORT_URL = 'ort/ort.wasm.min.js';
   var $ = function (id) { return document.getElementById(id); };
 
@@ -37,7 +37,9 @@
   }
   async function fetchModel() {
     var cache = null;
-    try { cache = await caches.open('background-killer-model-v1'); } catch (e) {}
+    /* v2 is the weights-only 8-bit model. Drop the old v1 copy so it does not sit on the visitor's disk. */
+    try { caches.delete('background-killer-model-v1').catch(function () {}); } catch (e) {}
+    try { cache = await caches.open('background-killer-model-v2'); } catch (e) {}
     var chunks = [], loaded = 0;
     for (var i = 0; i < MODEL_PARTS.length; i++) {
       var url = MODEL_PARTS[i], res = null;

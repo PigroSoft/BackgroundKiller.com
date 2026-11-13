@@ -92,7 +92,7 @@ FAQ = [
     ("Is this a remove.bg alternative?",
      'Yes. remove.bg has announced that its standalone website will close on 1 December 2026. Background Killer does the same basic job, and the free download is full size. <a href="/remove-bg-alternative">Here is how they compare</a>.'),
     ("Do you upload my photo?",
-     'No. The cutout model runs in your browser, on your own computer, and the page never sends your photo anywhere. The model is about 46 MB, so it downloads the first time you visit and is saved for next time. You can check this yourself: <a href="/privacy#check">here is how</a>.'),
+     'No. The cutout model runs in your browser, on your own computer, and the page never sends your photo anywhere. The model is about 47 MB, so it downloads the first time you visit and is saved for next time. You can check this yourself: <a href="/privacy#check">here is how</a>.'),
     ("How big can the download be?",
      "It matches your original photo, pixel for pixel. Nothing is scaled down. Very large photos use a lot of memory, so on an older phone a huge image may fail. If that happens, try a smaller version."),
     ("How do I remove the background from a photo?",
@@ -106,7 +106,7 @@ FAQ = [
     ("Can I do a lot of photos at once?",
      'Yes. Drop in 20 or more at once, or add more while others are still cutting. The newest opens right away, the rest keep going in the background, and the little previews at the bottom jump between them. When they are done, Download all gives you one zip of full-size cutouts. This is handy for <a href="/product-photo-background-remover">product photos</a>.'),
     ("What if the cutout is wrong?",
-     "Open Somethin’ fishy? and try another way. There are four: keep proportions, zoom in on the subject, double check, and boost contrast. Each runs the model differently, and you can switch back to the first try at any time. Then tidy anything left with Erase and Restore."),
+     "Open Something fishy? and try another way. There are four: keep proportions, zoom in on the subject, double check, and boost contrast. Each runs the model differently, and you can switch back to the first try at any time. Then tidy anything left with Erase and Restore."),
     ("Who is the cat?",
      "That is Claw. He handles the backgrounds."),
 ]
@@ -154,7 +154,7 @@ page("/remove-bg-alternative",
 <ul>
 <li>Background Killer is a website. It is not an API or a plugin, so it does not replace remove.bg's API or its Photoshop plugin.</li>
 <li>Speed depends on your computer, because the work happens on your device. Expect some seconds per photo, and longer on an old phone.</li>
-<li>The first visit downloads a 46 MB model. After that it is saved in your browser.</li>
+<li>The first visit downloads a 47 MB model. After that it is saved in your browser.</li>
 <li>Results are good on most photos but not perfect. Very fine hair, glass and see-through objects can need a touch-up with the brush.</li>
 </ul>
 <h2>How to switch in four steps</h2>
@@ -177,7 +177,7 @@ page("/remove-background-from-image",
 <h2>Four steps</h2>
 <ol>
 <li><strong>Add your photo.</strong> Click Upload image, drag a file onto the page, or paste one with Ctrl+V or &#8984;V. JPG, PNG and WebP work, and HEIC works in browsers that can open it, such as Safari.</li>
-<li><strong>Wait for the cutout.</strong> The first visit downloads the cutout model once, about 46 MB, and then keeps it for next time. After that, each photo takes some seconds, depending on your computer.</li>
+<li><strong>Wait for the cutout.</strong> The first visit downloads the cutout model once, about 47 MB, and then keeps it for next time. After that, each photo takes some seconds, depending on your computer.</li>
 <li><strong>Fix the edges if needed.</strong> In Sharpen the claws, choose Erase to brush away leftover background, or Restore to bring back parts of the subject that were cut by mistake. Change the brush size to suit the detail, and use Undo if you slip.</li>
 <li><strong>Choose a background and download.</strong> Keep it transparent, or open Clean getaway and choose white, black, red or any color. Press Download full size, or Copy image to paste it straight into another app.</li>
 </ol>
@@ -240,7 +240,7 @@ page("/product-photo-background-remover",
 <h2>Several photos in five steps</h2>
 <ol>
 <li>Drop in all your photos at once, or add more at any time. They are cut out one after another.</li>
-<li>Click each preview at the bottom to check the result. If one is off, try Somethin’ fishy?, then fix edges with Sharpen the claws.</li>
+<li>Click each preview at the bottom to check the result. If one is off, try Something fishy?, then fix edges with Sharpen the claws.</li>
 <li>Choose the white swatch for a pure white background. Marketplaces such as Amazon ask for pure white on main images, so check the current rules for the one you sell on.</li>
 <li>Keep Trim to the subject switched on and set the same margin for every photo, so the products look consistent.</li>
 <li>Choose PNG or WebP and press Download all as .zip.</li>
@@ -318,7 +318,7 @@ page("/privacy",
 <h2>Your photos</h2>
 <p>When you add an image, your browser reads it and the cutout model runs on your device. The image, the cutout and your edits stay in your browser's memory and are gone when you close or reload the page, unless you download them. We never receive them.</p>
 <h2>What the page downloads</h2>
-<p>The first time you visit, the page downloads the cutout model (about 46 MB) from this site and saves it in your browser's cache. After that it loads from the cache and the page needs no download for it. Besides the model, the page loads its own text, fonts, images and scripts from this site. Every one of these is a plain request for a file. No request carries your photo or anything made from it.</p>
+<p>The first time you visit, the page downloads the cutout model (about 47 MB) from this site and saves it in your browser's cache. After that it loads from the cache and the page needs no download for it. Besides the model, the page loads its own text, fonts, images and scripts from this site. Every one of these is a plain request for a file. No request carries your photo or anything made from it.</p>
 <h2>Data stored on your device</h2>
 <p>The model is kept in your browser's cache so it only has to download once. This is needed to provide the function you asked for, and it contains no personal information. If you switch on "Notify me when done", the page also saves that choice in your browser's local storage. You can remove both at any time by clearing the site's data in your browser settings. We do not set cookies.</p>
 <h2>Visit counter</h2>
@@ -344,7 +344,7 @@ page("/privacy",
 <h3>Ihre Fotos</h3>
 <p>Wenn Sie ein Bild hinzuf&uuml;gen, liest Ihr Browser es ein, und das Modell zum Freistellen l&auml;uft auf Ihrem Ger&auml;t. Bild, Freisteller und Ihre Bearbeitungen bleiben im Arbeitsspeicher Ihres Browsers und sind weg, sobald Sie die Seite schlie&szlig;en oder neu laden, sofern Sie sie nicht herunterladen. Wir erhalten sie nie.</p>
 <h3>Was die Seite herunterl&auml;dt</h3>
-<p>Beim ersten Besuch l&auml;dt die Seite das Modell (etwa 46 MB) von dieser Website herunter und speichert es im Cache Ihres Browsers. Danach wird es aus dem Cache geladen. Au&szlig;erdem l&auml;dt die Seite ihre eigenen Texte, Schriften, Bilder und Skripte von dieser Website. Jede dieser Anfragen ist eine einfache Anfrage nach einer Datei. Keine Anfrage enth&auml;lt Ihr Foto oder etwas, das daraus erzeugt wurde.</p>
+<p>Beim ersten Besuch l&auml;dt die Seite das Modell (etwa 47 MB) von dieser Website herunter und speichert es im Cache Ihres Browsers. Danach wird es aus dem Cache geladen. Au&szlig;erdem l&auml;dt die Seite ihre eigenen Texte, Schriften, Bilder und Skripte von dieser Website. Jede dieser Anfragen ist eine einfache Anfrage nach einer Datei. Keine Anfrage enth&auml;lt Ihr Foto oder etwas, das daraus erzeugt wurde.</p>
 <h3>Auf Ihrem Ger&auml;t gespeicherte Daten</h3>
 <p>Das Modell liegt im Cache Ihres Browsers, damit es nur einmal geladen werden muss. Das ist f&uuml;r die von Ihnen gew&uuml;nschte Funktion erforderlich und enth&auml;lt keine personenbezogenen Daten. Wenn Sie &bdquo;Benachrichtigen, wenn fertig&ldquo; einschalten, speichert die Seite diese Wahl zus&auml;tzlich im lokalen Speicher Ihres Browsers. Sie k&ouml;nnen beides jederzeit entfernen, indem Sie die Websitedaten in den Browsereinstellungen l&ouml;schen. Wir setzen keine Cookies.</p>
 <h3>Besucherz&auml;hler</h3>

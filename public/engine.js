@@ -1,5 +1,5 @@
 /* Clean Cut inference engine. Runs in a Web Worker or on the main thread.
-   Model: ISNet general-use (Apache-2.0), 8-bit quantized. Input 1x3x1024x1024. */
+   Model: ISNet general-use (Apache-2.0). Weights stored as 8-bit per channel, maths in full precision. Input 1x3x1024x1024. */
 (function (g) {
   var SIZE = 1024;
   var Engine = {

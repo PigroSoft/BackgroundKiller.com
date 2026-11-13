@@ -2,6 +2,12 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.17, 13 November 2026
+
+- Much cleaner cutouts. The cutout model is now packed so that it keeps its full precision when it runs. The old version squeezed every step of the maths into 8 bits, which lost faint detail and caused cloudy blobs on plain backdrops, patchy holes in pale parts of the subject, and missing thin parts like mug handles. The download is the same size, about 47 MB.
+- If you have used the site before, your browser downloads the new model once and deletes the old copy.
+- The cutout methods heading now reads "Something fishy?".
+
 ## 1.0.16, 13 November 2026
 
 - The cutout methods heading now reads "Somethin’ fishy?".

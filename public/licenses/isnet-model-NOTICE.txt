@@ -4,6 +4,8 @@ Licensed under the Apache License, Version 2.0 (see apache-2.0.txt).
 Source: https://github.com/xuebinqin/DIS
 Paper: Qin et al., "Highly Accurate Dichotomous Image Segmentation", ECCV 2022.
 
-Changes: the original weights were converted to the ONNX format and quantized
-to 8 bits so that they can run in a web browser. The files are served as four
+Changes: the original weights were converted to the ONNX format, and the
+convolution weights are stored as 8-bit integers with one scale per output
+channel, so the file is small enough for a web browser. They are turned back
+into full-precision numbers before use, and all maths runs in full precision. The files are served as four
 chunks in /model/ and are reassembled by the page before use.
