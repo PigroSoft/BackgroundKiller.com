@@ -2,6 +2,10 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.19, 13 November 2026
+
+- The footer line now reads "A Pigrosoft product", and the Pigrosoft link is red so it reads as a link.
+
 ## 1.0.18, 13 November 2026
 
 - The footer now says Background Killer is a Pigrosoft product, with a link to pigrosoft.com.
