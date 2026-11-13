@@ -432,6 +432,6 @@ details.fold > summary:hover { background: #ffffff08; }
 @media (max-width: 760px) {
   .site-header { background: #0b0c0c; border-bottom: 1px solid #26292b; z-index: 3; }
   .noir-scene { height: 660px; width: 100%; object-fit: cover; object-position: 46% 0; -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 100%); mask-image: linear-gradient(to bottom, #000 78%, transparent 100%); }
-  .noir-backdrop { background-color: var(--ink); background-image: linear-gradient(to right, #0b0c0c 0 46%, transparent 46%), conic-gradient(#e3e6e6 25%, transparent 0 50%, #e3e6e6 0 75%, transparent 0); background-size: 100% 100%, 24px 24px; background-repeat: no-repeat, repeat; }
+  .noir-backdrop { background-color: #ffffff; background-image: linear-gradient(to right, #0b0c0c 0 46%, transparent 46%), conic-gradient(#e3e6e6 25%, transparent 0 50%, #e3e6e6 0 75%, transparent 0); background-size: 100% 100%, 24px 24px; background-repeat: no-repeat, repeat; }
   .noir-backdrop::after { background: linear-gradient(to bottom, transparent 40%, rgba(16,17,18,.55) 58%, #101112 70%); }
 }

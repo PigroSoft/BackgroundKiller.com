@@ -2,6 +2,10 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.21, 13 November 2026
+
+- On phones, the checkerboard behind the torn edge is back to the lighter grey one.
+
 ## 1.0.20, 13 November 2026
 
 - On phones, the top of the page has a solid black bar behind the logo, and the noir photo is shown larger and less cropped, with the torn edge in view like on the desktop page.
