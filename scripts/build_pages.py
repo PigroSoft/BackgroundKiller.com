@@ -21,12 +21,11 @@ FOOTER = """<footer class="site-footer">
   <div class="footer-brand">
     <a class="wordmark" href="/" aria-label="Background Killer home">Background<b>Killer</b><small>.com</small></a>
     <p class="tagline">The background had it coming.</p>
-    <p class="made">A <a href="https://pigrosoft.com/">Pigrosoft</a> product</p>
     <a class="star-btn" href="https://github.com/PigroSoft/BackgroundKiller.com" target="_blank" rel="noopener"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 .25a.75.75 0 0 1 .67.42l1.88 3.8 4.2.61a.75.75 0 0 1 .42 1.28l-3.04 2.96.72 4.18a.75.75 0 0 1-1.09.79L8 12.55l-3.76 1.98a.75.75 0 0 1-1.09-.79l.72-4.18L1.83 6.36a.75.75 0 0 1 .42-1.28l4.2-.61 1.88-3.8A.75.75 0 0 1 8 .25Z"/></svg><span>Star on GitHub</span></a>
   </div>
   <nav class="footer-col" aria-label="Guides"><h2>Guides</h2>%s</nav>
-  <nav class="footer-col" aria-label="About and legal"><h2>About and legal</h2>%s</nav>
-  <p class="copy">&copy; 2026 <a href="https://pigrosoft.com/">Pigrosoft</a> <span class="sep">&middot;</span> <a id="bkVersion" href="/CHANGELOG.txt">Version</a> <span class="sep">&middot;</span> <a href="https://pigrosoft.com/bug-report?site=BackgroundKiller" referrerpolicy="unsafe-url" target="_blank" rel="noopener">Report a bug</a></p>
+  <nav class="footer-col" aria-label="Legal"><h2>Legal</h2>%s</nav>
+  <p class="copy">A <a href="https://pigrosoft.com/">Pigrosoft</a> product <span class="sep">&middot;</span> &copy; 2026 <span class="sep">&middot;</span> <a id="bkVersion" href="/CHANGELOG.txt">Version</a> <span class="sep">&middot;</span> <a href="https://pigrosoft.com/bug-report?site=BackgroundKiller" referrerpolicy="unsafe-url" target="_blank" rel="noopener">Report a bug</a></p>
   <script src="/version.js"></script>
   <script src="https://stats.pigrosoft.com/c.js" defer></script>
 </footer>""" % (

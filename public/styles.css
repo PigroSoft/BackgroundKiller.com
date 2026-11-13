@@ -427,6 +427,11 @@ details.fold > summary:focus-visible { outline: 2px solid var(--focus); outline-
 details.fold > summary:hover { background: #ffffff08; }
 .fold-body { display: grid; gap: 16px; padding: 4px 18px 18px; }
 
-.site-footer .footer-brand .made { margin-top: 4px; font-size: 0.9rem; text-shadow: 0 1px 4px #000; }
-.site-footer .footer-brand .made a { color: var(--red); font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
-.site-footer .footer-brand .made a:hover { color: var(--red-hover); }
+
+/* Phones: a solid black bar across the top, and the photo shown larger and less cropped, fading into the page below. */
+@media (max-width: 760px) {
+  .site-header { background: #0b0c0c; border-bottom: 1px solid #26292b; z-index: 3; }
+  .noir-scene { height: 660px; width: 100%; object-fit: cover; object-position: 46% 0; -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent 100%); mask-image: linear-gradient(to bottom, #000 78%, transparent 100%); }
+  .noir-backdrop { background-color: var(--ink); background-image: linear-gradient(to right, #0b0c0c 0 46%, transparent 46%), conic-gradient(#e3e6e6 25%, transparent 0 50%, #e3e6e6 0 75%, transparent 0); background-size: 100% 100%, 24px 24px; background-repeat: no-repeat, repeat; }
+  .noir-backdrop::after { background: linear-gradient(to bottom, transparent 40%, rgba(16,17,18,.55) 58%, #101112 70%); }
+}
