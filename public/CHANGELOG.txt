@@ -2,6 +2,14 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.22, 17 November 2026
+
+- Works offline and can be installed as an app. After your first visit the page keeps its own files, and the cutout model is saved once in your browser, so it opens and cuts with no connection. The site is online-first: with a connection you always get the newest version.
+- New "Host it yourself" section in the README, with steps for any static host and a script (`scripts/package.sh`) that builds a zip of the site without our visit counter. `build_pages.py --no-counter` does the same for the footer.
+- The About page now says the tool is free and funded by Pigrosoft's other products, that cutouts are free for commercial use, how to install it, and how to host it yourself. The terms say the same about commercial use.
+- The privacy page says that a service worker keeps copies of the site's files in your browser.
+- The licenses page no longer says the model was compressed to 8 bits. It now says the weights are stored as 8-bit numbers and the maths runs in full precision.
+
 ## 1.0.21, 13 November 2026
 
 - On phones, the checkerboard behind the torn edge is back to the lighter grey one.

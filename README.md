@@ -14,6 +14,7 @@ A free background remover that runs entirely in your browser. There is no server
 - **Batch mode.** Drop in 20 or more photos, keep adding while others are still cutting, then download a zip or save straight to a folder. It can notify you when the batch finishes.
 - **Fixes for tricky photos.** Four other ways to run the model (keep proportions, zoom in on the subject, double check, boost contrast), an edge slider, and Erase and Restore brushes with undo and redo.
 - **Works on phones.** The layout is built for narrow screens as well as desktops.
+- **Works offline.** After the first visit it opens and cuts with no connection, and your browser can install it as an app (a manifest and a small service worker, `public/sw.js`).
 
 ![Cutting out a sample photo](docs/editor.jpg)
 
@@ -22,12 +23,24 @@ A free background remover that runs entirely in your browser. There is no server
 - The cutout model (ISNet general-use, Apache-2.0, 47 MB, with 8-bit per-channel weights and full-precision maths) lives in `public/model/` as four chunks named `.wasm` so any static host serves them. The browser reassembles them and caches the result with the Cache API.
 - ONNX Runtime Web 1.20.1 (`public/ort/`) runs the model in a Web Worker (`worker.js`, `engine.js`).
 - `public/matte.js` does the edge refinement and runs on the main thread after the model returns its mask.
+- `public/sw.js` keeps the site's own files so the page opens offline. It goes to the network first, so a new version shows up on the next visit, and it leaves the model alone: the page keeps that in its own cache.
 - Fonts (Anton, Inter), JSZip and the runtime are all self-hosted, so the page makes no third-party requests. Its only other request goes to our own visit counter at stats.pigrosoft.com (cookieless, nothing stored about the visitor, nothing from your photos).
 
 ## Licence
 The code is MIT licensed, see `LICENSE`. The licence does not cover the name, logo, Claw artwork, or other images in `public/assets/`. The sample photo of a ragdoll kitten is by Arjunmz, [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/), from [Wikimedia Commons](https://commons.wikimedia.org/wiki/File:Ragdoll_kitten_on_the_prowl_2017_(cropped_2022).jpg). The model, runtime, JSZip and fonts keep their own licences in `public/licenses/`.
 
 If you fork this and publish your own copy, use your own name and artwork, and replace the imprint, privacy and terms pages with your own details.
+
+## Host it yourself
+The site is plain files, so any web host can serve it. There is no server, no build step and nothing to run.
+
+1. **Get the files.** Either [download the repository as a zip](https://github.com/PigroSoft/BackgroundKiller.com/archive/refs/heads/main.zip) and use the `public/` folder, or clone it. For a zip of just the site, without our visit counter, run `sh scripts/package.sh`. It writes `dist/background-killer-<version>.zip`.
+2. **Put them on a host.** Upload the contents of `public/` to the root of any static host (Cloudflare, Netlify, GitHub Pages, nginx, Apache), or on your own computer run `cd public && python3 -m http.server 8000`.
+3. **Use HTTPS.** Browsers only run the service worker and the model cache on `https://` or on `localhost`. Without that the tool still works, but it will not install or run offline.
+4. **Check the file types.** Serve `.wasm` as `application/wasm`, `.mjs` as `text/javascript` and `.webmanifest` as `application/manifest+json`. Most hosts already do. The model chunks in `model/` are named `.wasm` on purpose so every host serves them.
+5. **Make it yours.** Replace the imprint, privacy and terms pages with your own details, and use your own name and artwork (see Licence). The pages and footer come from `scripts/build_pages.py`. Run `python3 scripts/build_pages.py --no-counter` after you edit them, so the footer does not send your visits to our counter at stats.pigrosoft.com.
+
+Once a visitor has opened your copy online, it works with no connection. The 47 MB model downloads once and stays in their browser.
 
 ## Contributing
 Bug reports and pull requests are welcome, and the site should stay free of servers, uploads and third-party requests (the one small request to our own counter is the exception). For anything else, write to support@pigrosoft.com.

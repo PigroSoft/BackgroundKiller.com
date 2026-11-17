@@ -9,6 +9,7 @@
 <link rel="canonical" href="https://backgroundkiller.com/licenses">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Background Killer">
 <meta property="og:title" content="Licenses and Credits | Background Killer">
@@ -32,7 +33,7 @@
 <h2>This site's code</h2>
 <p>The code of Background Killer is released under the MIT licence: <a href="/LICENSE.txt">LICENSE</a>. The licence covers the code only. The name Background Killer, the logo, the Claw artwork and the sample photos are not covered, and all rights in them stay with Pigrosoft. Version history is in the <a href="/CHANGELOG.txt">changelog</a>.</p>
 <h2>The cutout model</h2>
-<p>The model that finds the subject in your photo is <strong>ISNet general-use</strong>, from the DIS project (Dichotomous Image Segmentation) by Xuebin Qin and colleagues, released under the Apache License 2.0. It is described in &ldquo;Highly Accurate Dichotomous Image Segmentation&rdquo; (ECCV 2022). We converted it to the ONNX format and compressed it to 8 bits so that it runs in a browser. It runs entirely on your device.</p>
+<p>The model that finds the subject in your photo is <strong>ISNet general-use</strong>, from the DIS project (Dichotomous Image Segmentation) by Xuebin Qin and colleagues, released under the Apache License 2.0. It is described in &ldquo;Highly Accurate Dichotomous Image Segmentation&rdquo; (ECCV 2022). We converted it to the ONNX format and store its weights as 8-bit numbers, one scale per channel, so the download is small. They are turned back into full-precision numbers before use, and all the maths runs in full precision. It runs entirely on your device.</p>
 <ul>
 <li><a href="/licenses/isnet-model-NOTICE.txt">Model notice and changes</a></li>
 <li><a href="/licenses/apache-2.0.txt">Apache License 2.0</a></li>

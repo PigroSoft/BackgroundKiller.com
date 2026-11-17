@@ -2,11 +2,11 @@
 """Generates the guide and legal pages in public/ and refreshes the shared footer, FAQ and
 structured data inside public/index.html. Run from the repo root: python3 scripts/build_pages.py
 The generated HTML is committed, so the site itself still needs no build step."""
-import json, re, pathlib
+import json, re, pathlib, sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent / "public"
 SITE = "https://backgroundkiller.com"
-UPDATED = "6 November 2026"
+UPDATED = "17 November 2026"
 
 # ---------------------------------------------------------------- shared pieces
 GUIDES = [
@@ -15,6 +15,7 @@ GUIDES = [
     ("/make-png-transparent", "Make a transparent PNG"),
     ("/product-photo-background-remover", "Product photo backgrounds"),
 ]
+COUNTER = '  <script src="https://stats.pigrosoft.com/c.js" defer></script>\n'
 LEGAL = [("/about", "About"), ("/imprint", "Imprint"), ("/privacy", "Privacy"), ("/terms", "Terms"), ("/licenses", "Licenses")]
 
 FOOTER = """<footer class="site-footer">
@@ -52,6 +53,7 @@ def head(title, desc, path, extra=""):
 <link rel="canonical" href="{url}">
 <link rel="icon" type="image/png" href="/favicon.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="manifest" href="/manifest.webmanifest">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Background Killer">
 <meta property="og:title" content="{title}">
@@ -107,6 +109,10 @@ FAQ = [
      'Yes. Drop in 20 or more at once, or add more while others are still cutting. The newest opens right away, the rest keep going in the background, and the little previews at the bottom jump between them. When they are done, Download all gives you one zip of full-size cutouts. This is handy for <a href="/product-photo-background-remover">product photos</a>.'),
     ("What if the cutout is wrong?",
      "Open Something fishy? and try another way. There are four: keep proportions, zoom in on the subject, double check, and boost contrast. Each runs the model differently, and you can switch back to the first try at any time. Then tidy anything left with Erase and Restore."),
+    ("Does it work offline?",
+     "Yes, after your first visit. The page keeps its own files and the cutout model is saved once in your browser, so it opens and cuts without a connection. To get an app icon, use Install app in Chrome or Edge, or Add to Home Screen in Safari."),
+    ("Can I host it myself?",
+     'Yes. It is plain files with no server and no build step, and the code is MIT licensed. The <a href="https://github.com/PigroSoft/BackgroundKiller.com#host-it-yourself">README</a> has the steps and a zip you can download.'),
     ("Who is the cat?",
      "That is Claw. He handles the backgrounds."),
 ]
@@ -261,18 +267,30 @@ page("/product-photo-background-remover",
 """ + related("/product-photo-background-remover") + "\n" + CTA,
      crumb="Product photo backgrounds")
 
+# Self-hosters: python3 scripts/build_pages.py --no-counter leaves out our visit counter.
+if "--no-counter" in sys.argv:
+    FOOTER = FOOTER.replace(COUNTER, "")
+
 # ---------------------------------------------------------------- legal pages
 
 page("/about",
      "About Background Killer",
-     "Who makes Background Killer, how it works, and under which licence.",
+     "Who makes Background Killer, how it is paid for, how it works, and under which licence.",
      """
 <h1>About</h1>
 <p class="lead">Background Killer is a free tool that removes the background from a photo, on your own computer.</p>
 <h2>Who makes it</h2>
 <p>Background Killer is made by Jeffrey Humble and <a href="https://pigrosoft.com/">Pigrosoft</a>, a small software company in Berlin. To reach us, write to <a href="mailto:support@pigrosoft.com">support@pigrosoft.com</a>. Our postal address and VAT ID are in the <a href="/imprint">imprint</a>.</p>
+<h2>How it is paid for</h2>
+<p>Background Killer is free, with no account, watermark or limit. It is funded by our other products at Pigrosoft.</p>
+<h2>Free for commercial use</h2>
+<p>The cutouts you make here are free to use for anything, including commercial work. There is no watermark, no credit line and no licence fee. The photo you start from still has to be yours to use. The <a href="/terms">terms</a> say the same.</p>
 <h2>How it works</h2>
 <p>The cutout runs inside your browser. It uses the ISNet model, which is licensed under Apache-2.0, and ONNX Runtime Web, which is licensed under MIT. Your photo does not leave your device. The page says exactly what it downloads in the <a href="/privacy#check">privacy text</a>, with steps to check it in your browser's network tab. The scripts that run on the page are plain JavaScript, so you can read them with your browser's developer tools.</p>
+<h2>Works offline</h2>
+<p>After your first visit the page keeps its own files, and the cutout model is saved once in your browser, so it opens and cuts without a connection. To get an app icon, choose Install app in the Chrome or Edge menu, or Add to Home Screen in Safari.</p>
+<h2>Host it yourself</h2>
+<p>The site is plain files with no server and no build step. You can run your own copy from a zip, on any web host or on your own computer. The steps are in the <a href="https://github.com/PigroSoft/BackgroundKiller.com#host-it-yourself">README</a>.</p>
 <h2>Licence</h2>
 <p>Background Killer is open source. The <a href="https://github.com/PigroSoft/BackgroundKiller.com">source code is on GitHub</a>, released under the MIT licence. Read it in <a href="/LICENSE.txt">LICENSE</a>. The name, logo, Claw artwork and sample photos are not part of that licence. The model, software and fonts we use keep their own licences, which are listed with credits on the <a href="/licenses">licenses page</a>.</p>
 <h2>Version</h2>
@@ -320,7 +338,7 @@ page("/privacy",
 <h2>What the page downloads</h2>
 <p>The first time you visit, the page downloads the cutout model (about 47 MB) from this site and saves it in your browser's cache. After that it loads from the cache and the page needs no download for it. Besides the model, the page loads its own text, fonts, images and scripts from this site. Every one of these is a plain request for a file. No request carries your photo or anything made from it.</p>
 <h2>Data stored on your device</h2>
-<p>The model is kept in your browser's cache so it only has to download once. This is needed to provide the function you asked for, and it contains no personal information. If you switch on "Notify me when done", the page also saves that choice in your browser's local storage. You can remove both at any time by clearing the site's data in your browser settings. We do not set cookies.</p>
+<p>The model is kept in your browser's cache so it only has to download once. A small background script (a service worker) also keeps copies of this site's own pages, scripts, fonts and images there, so the page opens without a connection. This is needed to provide the function you asked for, and it contains no personal information. If you switch on "Notify me when done", the page also saves that choice in your browser's local storage. You can remove all of it at any time by clearing the site's data in your browser settings. We do not set cookies.</p>
 <h2>Visit counter</h2>
 <p>To know roughly how many people use the site, we count visits with a small counter that we built ourselves and run on Cloudflare, the same host that delivers this site. It takes the place of the usual analytics services, so your browser does not contact Google, Meta or any other analytics company. When a page loads, your browser sends one small request to stats.pigrosoft.com with the address of the page and, if your browser shares it, the name of the website that sent you (the hostname only, never a full address). The counter mixes your IP address and browser type with the site name and a secret code that is replaced every day, and keeps only the result, so that you are not counted twice on the same day. It then adds one to that day&rsquo;s totals for the site, the page and the referring website. Your IP address is not stored, no cookies are set, nothing is saved in your browser, and the day&rsquo;s results and secret code are deleted when the next day starts. The daily totals cannot be tied to a person, and no photo or anything made from it is ever part of this request. Cloudflare processes the request as our host, as described below. The legal basis is Art. 6(1)(f) GDPR, our interest in knowing how many people use the site. You can object at any time by emailing us.</p>
 <h2 id="check">How to check this yourself</h2>
@@ -336,7 +354,7 @@ page("/privacy",
 
 <h2 id="de" lang="de">Datenschutzerkl&auml;rung</h2>
 <div lang="de">
-<p>Stand: 4. November 2026.</p>
+<p>Stand: 17. November 2026.</p>
 <h3>Verantwortlicher</h3>
 <p>Jeffrey Humble (Pigrosoft), Peschkestr. 5, 12161 Berlin, Deutschland. E-Mail: <a href="mailto:support@pigrosoft.com">support@pigrosoft.com</a>. Siehe auch das <a href="/imprint#de">Impressum</a>.</p>
 <h3>Kurzfassung</h3>
@@ -346,7 +364,7 @@ page("/privacy",
 <h3>Was die Seite herunterl&auml;dt</h3>
 <p>Beim ersten Besuch l&auml;dt die Seite das Modell (etwa 47 MB) von dieser Website herunter und speichert es im Cache Ihres Browsers. Danach wird es aus dem Cache geladen. Au&szlig;erdem l&auml;dt die Seite ihre eigenen Texte, Schriften, Bilder und Skripte von dieser Website. Jede dieser Anfragen ist eine einfache Anfrage nach einer Datei. Keine Anfrage enth&auml;lt Ihr Foto oder etwas, das daraus erzeugt wurde.</p>
 <h3>Auf Ihrem Ger&auml;t gespeicherte Daten</h3>
-<p>Das Modell liegt im Cache Ihres Browsers, damit es nur einmal geladen werden muss. Das ist f&uuml;r die von Ihnen gew&uuml;nschte Funktion erforderlich und enth&auml;lt keine personenbezogenen Daten. Wenn Sie &bdquo;Benachrichtigen, wenn fertig&ldquo; einschalten, speichert die Seite diese Wahl zus&auml;tzlich im lokalen Speicher Ihres Browsers. Sie k&ouml;nnen beides jederzeit entfernen, indem Sie die Websitedaten in den Browsereinstellungen l&ouml;schen. Wir setzen keine Cookies.</p>
+<p>Das Modell liegt im Cache Ihres Browsers, damit es nur einmal geladen werden muss. Ein kleines Hintergrundskript (ein Service Worker) legt dort au&szlig;erdem Kopien der eigenen Seiten, Skripte, Schriften und Bilder dieser Website ab, damit sich die Seite ohne Verbindung &ouml;ffnet. Das ist f&uuml;r die von Ihnen gew&uuml;nschte Funktion erforderlich und enth&auml;lt keine personenbezogenen Daten. Wenn Sie &bdquo;Benachrichtigen, wenn fertig&ldquo; einschalten, speichert die Seite diese Wahl zus&auml;tzlich im lokalen Speicher Ihres Browsers. Sie k&ouml;nnen alles jederzeit entfernen, indem Sie die Websitedaten in den Browsereinstellungen l&ouml;schen. Wir setzen keine Cookies.</p>
 <h3>Besucherz&auml;hler</h3>
 <p>Um ungef&auml;hr zu wissen, wie viele Menschen die Website nutzen, z&auml;hlen wir Besuche mit einem kleinen Z&auml;hler, den wir selbst gebaut haben und bei Cloudflare betreiben, dem Hoster, der auch diese Website ausliefert. Er ersetzt die &uuml;blichen Analysedienste, daher nimmt Ihr Browser keinen Kontakt zu Google, Meta oder einem anderen Analyseanbieter auf. Beim Laden einer Seite sendet Ihr Browser eine kleine Anfrage an stats.pigrosoft.com mit der Adresse der Seite und, sofern Ihr Browser ihn mitsendet, dem Namen der Website, von der Sie kommen (nur der Hostname, nie die vollst&auml;ndige Adresse). Der Z&auml;hler vermischt Ihre IP-Adresse und Ihren Browsertyp mit dem Namen der Website und einem geheimen Code, der jeden Tag ersetzt wird, und beh&auml;lt nur das Ergebnis, damit Sie am selben Tag nicht doppelt gez&auml;hlt werden. Anschlie&szlig;end erh&ouml;ht er die Tageszahlen f&uuml;r die Website, die Seite und die verweisende Website um eins. Ihre IP-Adresse wird nicht gespeichert, es werden keine Cookies gesetzt, nichts wird in Ihrem Browser abgelegt, und die Ergebnisse und der geheime Code des Tages werden gel&ouml;scht, sobald der n&auml;chste Tag beginnt. Die Tageszahlen lassen sich keiner Person zuordnen, und kein Foto und nichts, das daraus erzeugt wurde, ist jemals Teil dieser Anfrage. Cloudflare verarbeitet die Anfrage als unser Hoster, wie unten beschrieben. Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO, unser Interesse daran zu wissen, wie viele Menschen die Website nutzen. Sie k&ouml;nnen jederzeit per E-Mail widersprechen.</p>
 <h3 id="pruefen">So pr&uuml;fen Sie es selbst</h3>
@@ -373,7 +391,7 @@ page("/terms",
 <h2>2. Free of charge</h2>
 <p>The service is free. We may change it, limit it or stop it at any time.</p>
 <h2>3. Your images</h2>
-<p>Your images are processed on your own device and are not uploaded to us. They stay yours, and we claim no rights in them or in the results. You confirm that you have the right to edit the images you use, and that they do not break the law or the rights of others.</p>
+<p>Your images are processed on your own device and are not uploaded to us. They stay yours, and we claim no rights in them or in the results. You may use the results for any purpose, including commercial work, with no credit and no fee. You confirm that you have the right to edit the images you use, and that they do not break the law or the rights of others.</p>
 <h2>4. Acceptable use</h2>
 <p>Do not use the site to break the law, to attack or overload it, or to copy it in a way that harms the service. You may link to it freely.</p>
 <h2>5. Results</h2>
@@ -397,7 +415,7 @@ page("/licenses",
 <h2>This site's code</h2>
 <p>The code of Background Killer is released under the MIT licence: <a href="/LICENSE.txt">LICENSE</a>. The licence covers the code only. The name Background Killer, the logo, the Claw artwork and the sample photos are not covered, and all rights in them stay with Pigrosoft. Version history is in the <a href="/CHANGELOG.txt">changelog</a>.</p>
 <h2>The cutout model</h2>
-<p>The model that finds the subject in your photo is <strong>ISNet general-use</strong>, from the DIS project (Dichotomous Image Segmentation) by Xuebin Qin and colleagues, released under the Apache License 2.0. It is described in &ldquo;Highly Accurate Dichotomous Image Segmentation&rdquo; (ECCV 2022). We converted it to the ONNX format and compressed it to 8 bits so that it runs in a browser. It runs entirely on your device.</p>
+<p>The model that finds the subject in your photo is <strong>ISNet general-use</strong>, from the DIS project (Dichotomous Image Segmentation) by Xuebin Qin and colleagues, released under the Apache License 2.0. It is described in &ldquo;Highly Accurate Dichotomous Image Segmentation&rdquo; (ECCV 2022). We converted it to the ONNX format and store its weights as 8-bit numbers, one scale per channel, so the download is small. They are turned back into full-precision numbers before use, and all the maths runs in full precision. It runs entirely on your device.</p>
 <ul>
 <li><a href="/licenses/isnet-model-NOTICE.txt">Model notice and changes</a></li>
 <li><a href="/licenses/apache-2.0.txt">Apache License 2.0</a></li>
@@ -436,7 +454,7 @@ html404 = html404.replace('c.js" defer>', 'c.js" defer data-status="404">')
 paths = ["/"] + [g[0] for g in GUIDES] + [l[0] for l in LEGAL if l[0].startswith("/")]
 sm = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
 for p in paths:
-    sm += "  <url><loc>%s%s</loc><lastmod>2026-11-04</lastmod></url>\n" % (SITE, p if p != "/" else "/")
+    sm += "  <url><loc>%s%s</loc><lastmod>2026-11-17</lastmod></url>\n" % (SITE, p if p != "/" else "/")
 sm += "</urlset>\n"
 (ROOT / "sitemap.xml").write_text(sm, encoding="utf-8")
 (ROOT / "robots.txt").write_text("User-agent: *\nAllow: /\n\nSitemap: %s/sitemap.xml\n" % SITE, encoding="utf-8")

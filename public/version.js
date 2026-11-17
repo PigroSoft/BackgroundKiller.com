@@ -1,6 +1,6 @@
 /* The one place to change the version. Edit these two lines, then add an entry to CHANGELOG.md and public/CHANGELOG.txt. */
-var BK_VERSION = '1.0.21';
-var BK_UPDATED = '2026-11-13';
+var BK_VERSION = '1.0.22';
+var BK_UPDATED = '2026-11-17';
 
 (function () {
   var el = document.getElementById('bkVersion'); if (!el) return;

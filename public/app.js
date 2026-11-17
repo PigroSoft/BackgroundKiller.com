@@ -865,5 +865,9 @@
     Array.prototype.forEach.call((e.clipboardData && e.clipboardData.items) || [], function (i) { if (i.kind === 'file') { var f = i.getAsFile(); if (f) fs.push(f); } });
     if (fs.length) addFiles(fs);
   });
+  /* Lets the page open without a connection once it has been visited. The model is kept separately, in its own cache. */
+  if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register(BASE + 'sw.js').catch(function () {}); });
+  }
   updateButtons();
 })();
