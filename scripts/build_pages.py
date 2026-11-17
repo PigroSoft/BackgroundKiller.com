@@ -428,6 +428,8 @@ html404 = head("Page not found | Background Killer", "This page has gone into hi
 <p class="cta"><a class="btn btn-primary btn-lg" href="/">Back to the home page</a></p>
 </main>
 """ + FOOTER + "\n</body>\n</html>\n"
+# The counter treats a page tagged data-status="404" as a broken link, not a page view.
+html404 = html404.replace('c.js" defer>', 'c.js" defer data-status="404">')
 (ROOT / "404.html").write_text(html404, encoding="utf-8")
 
 # ---------------------------------------------------------------- sitemap and robots
