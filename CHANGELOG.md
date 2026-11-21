@@ -2,6 +2,10 @@
 
 The version number and date live in `public/version.js`. To release, change them there and add an entry here. Keep `public/CHANGELOG.txt` the same as this file.
 
+## 1.0.23, 21 November 2026
+
+- The BK icon (browser tab, home screen and installed app) now matches the logo: slanted letters with a drop shadow, a red K and the claw slashes underneath.
+
 ## 1.0.22, 17 November 2026
 
 - Works offline and can be installed as an app. After your first visit the page keeps its own files, and the cutout model is saved once in your browser, so it opens and cuts with no connection. The site is online-first: with a connection you always get the newest version.
