@@ -16,7 +16,7 @@ GUIDES = [
     ("/product-photo-background-remover", "Product photo backgrounds"),
 ]
 COUNTER = '  <script src="https://stats.pigrosoft.com/c.js" defer></script>\n'
-LEGAL = [("/about", "About"), ("/imprint", "Imprint"), ("/privacy", "Privacy"), ("/terms", "Terms"), ("/licenses", "Licenses")]
+LEGAL = [("/about", "About"), ("/imprint", "Imprint"), ("/privacy", "Privacy Policy"), ("/terms", "Terms"), ("/licenses", "Licenses")]
 
 FOOTER = """<footer class="site-footer">
   <div class="footer-brand">
@@ -299,7 +299,7 @@ page("/about",
 
 page("/imprint",
      "Imprint | Background Killer",
-     "Legal notice (Impressum) for backgroundkiller.com.",
+     "Imprint for backgroundkiller.com.",
      """
 <h1>Imprint</h1>
 <p><a href="#de">Deutsche Version</a></p>
@@ -327,7 +327,7 @@ page("/privacy",
      "Privacy Policy | Background Killer",
      "How backgroundkiller.com handles data. Photos are processed in your browser and are not uploaded.",
      """
-<h1>Privacy</h1>
+<h1>Privacy Policy</h1>
 <p>Last updated: %(u)s. <a href="#de">Deutsche Version</a></p>
 <h2>Controller</h2>
 <p>Jeffrey Humble (Pigrosoft), Peschkestr. 5, 12161 Berlin, Germany. Email: <a href="mailto:support@pigrosoft.com">support@pigrosoft.com</a>. See also the <a href="/imprint">imprint</a>.</p>
